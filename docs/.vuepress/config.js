@@ -19,31 +19,31 @@ module.exports = {
       '看起来我们进入了错误的链接',
     ],
     navbar: [
-      {
-        text: '博客分类',
-        children: [
+      // {
+      //   text: '博客分类',
+      //   children: [
           {
             text: '技术',
             children: [
               {
                 text: 'Golang',
-                link: '/blog/technology/golang/'
+                link: '/technology/golang/'
               },
               {
                 text: 'Rust',
-                link: '/blog/technology/rust/'
+                link: '/technology/rust/'
               },
               {
                 text: 'Python',
-                link: '/blog/technology/python/'
+                link: '/technology/python/'
               },
               {
                 text: 'Linux',
-                link: '/blog/technology/linux/'
+                link: '/technology/linux/'
               },
               {
                 text: '其他',
-                link: '/blog/technology/other/'
+                link: '/technology/other/'
               }
             ]
           },
@@ -52,15 +52,15 @@ module.exports = {
             children: [
               {
                 text: '计算机',
-                link: '/blog/book/it/'
+                link: '/book/it/'
               },
               {
                 text: '情感',
-                link: '/blog/book/emotion/'
+                link: '/book/emotion/'
               },
               {
                 text: '小说',
-                link: '/blog/book/fiction/'
+                link: '/book/fiction/'
               },
             ]
           },
@@ -76,23 +76,23 @@ module.exports = {
                 link: '/blog/life/other/'
               }
             ]
-          }
-        ]
-      },
-      {
-        text: '数据统计',
-        link: 'https://analytics.google.com/analytics/web'
+        //   }
+        // ]
       },
       {
         text: '关于我',
         link: '/about/'
+      },
+      {
+        text: '数据统计',
+        link: 'https://analytics.google.com/analytics/web'
       }
     ],
   },
 
   lang: 'zh-CN',
   title: 'ChnMig的个人网站',
-  description: '知识,汗水,灵感和机遇',
+  description: '知识,实践,灵感和机遇',
   base: '/',
   head: [['link', { rel: 'icon', href: '/images/favicon.ico' }]],
 
