@@ -1,11 +1,5 @@
 // https://v2.vuepress.vuejs.org/zh/reference/config.html
 module.exports = {
-  lang: 'zh-CN',
-  title: 'ChnMig的博客',
-  description: '',
-  base: '/',
-  head: [['link', { rel: 'icon', href: '/images/favicon.ico' }]],
-
   themeConfig: {
     logo: '/images/avatar.gif',
     repo: 'https://github.com/ChnMig',
@@ -26,13 +20,88 @@ module.exports = {
     ],
     navbar: [
       {
-        text: '访问数据',
-        link: 'https://tongji.baidu.com/web/10000012572/overview/index'
+        text: '博客分类',
+        children: [
+          {
+            text: '技术',
+            children: [
+              {
+                text: 'Golang',
+                link: '/blog/technology/golang/'
+              },
+              {
+                text: 'Rust',
+                link: '/blog/technology/rust/'
+              },
+              {
+                text: 'Python',
+                link: '/blog/technology/python/'
+              },
+              {
+                text: 'Linux',
+                link: '/blog/technology/linux/'
+              },
+              {
+                text: '其他',
+                link: '/blog/technology/other/'
+              }
+            ]
+          },
+          {
+            text: '读书',
+            children: [
+              {
+                text: '计算机',
+                link: '/blog/book/it/'
+              },
+              {
+                text: '情感',
+                link: '/blog/book/emotion/'
+              },
+              {
+                text: '小说',
+                link: '/blog/book/fiction/'
+              },
+            ]
+          },
+          {
+            text: '生活',
+            children: [
+              {
+                text: '菜谱',
+                link: '/blog/life/recipe/'
+              },
+              {
+                text: '其他',
+                link: '/blog/life/other/'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        text: '数据统计',
+        link: 'https://analytics.google.com/analytics/web'
       },
       {
         text: '关于我',
-        linl: '/about'
+        link: '/about/'
       }
     ],
   },
+
+  lang: 'zh-CN',
+  title: 'ChnMig的个人网站',
+  description: '知识,汗水,灵感和机遇',
+  base: '/',
+  head: [['link', { rel: 'icon', href: '/images/favicon.ico' }]],
+
+  plugins: [
+    [
+      '@vuepress/plugin-google-analytics',
+      {
+        id: 'G-L57VYPMS8J',
+      },
+    ],
+  ],
 }
