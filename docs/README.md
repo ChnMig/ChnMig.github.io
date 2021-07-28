@@ -6,7 +6,7 @@ actions:
   - text: 查看博客目录
     link: /blog/
     type: primary
-  - text: 关于我
+  - text: 关于
     link: /about/
     type: secondary
 features:
