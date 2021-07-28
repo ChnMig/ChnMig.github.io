@@ -23,7 +23,11 @@ module.exports = {
   title: 'ChnMig的个人网站',
   description: '知识,实践,灵感和机遇',
   base: '/',
-  head: [['link', { rel: 'icon', href: '/images/favicon.ico' }]],
+  head: [
+  ['link', { rel: 'icon', href: '/images/favicon.ico' }],
+  ['link', { rel: 'manifest', href: '/manifest.webmanifest' }],
+  ['meta', { name: 'theme-color', content: '#3eaf7c' }],
+  ],
 
   plugins: [
     [
@@ -56,12 +60,6 @@ module.exports = {
     ],
   ],
 
-  head: [
-    ['link', { rel: 'manifest', href: '/manifest.webmanifest' }],
-    ['meta', { name: 'theme-color', content: '#3eaf7c' }],
-    // ...其他标签
-  ],
-  
   themeConfig: {
     navbar: [
       // {
