@@ -3,8 +3,8 @@ home: true
 title: 首页
 heroImage: /images/avatar.gif
 actions:
-  - text: 查看博客目录
-    link: /blog/
+  - text: 查看目录
+    link: /menu/
     type: primary
   - text: 关于
     link: /about/
