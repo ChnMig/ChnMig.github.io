@@ -6,7 +6,7 @@
 
 ## 来源
 
-这个课是截取的视频, 不知道来源, 讲解人是 [逯瑶]([逯瑶 (bjwbh.cn)](http://www.bjwbh.cn/OddPage.aspx?sign=7&uId=66)), 简历看起来很厉害
+这个课是截取的视频, 不知道来源, 讲解人是 [逯瑶 (bjwbh.cn)](http://www.bjwbh.cn/OddPage.aspx?sign=7&uId=66), 简历看起来很厉害
 
 ## 什么是礼仪
 
