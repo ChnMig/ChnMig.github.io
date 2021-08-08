@@ -4,5 +4,5 @@
 
 排序为创建日期的从近到远
 
-[好的礼仪 21/08/08](https://chnmig.github.io/book/fiction/good_etiquette)
+[好的礼仪 21/08/08](https://chnmig.github.io/book/emotion/good_etiquette)
 
