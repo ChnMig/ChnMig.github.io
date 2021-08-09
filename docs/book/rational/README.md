@@ -16,7 +16,7 @@
 
 > 排序为创建日期的从近到远
 
-###  [好的礼仪](https://chnmig.github.io/book/rational/good_etiquette)
+###  [好的礼仪](./good_etiquette)
 
 **创建时间**: 2021/08/08
 
