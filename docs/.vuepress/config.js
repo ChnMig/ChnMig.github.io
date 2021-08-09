@@ -44,7 +44,7 @@ module.exports = {
                     },
                     {
                         text: '理性',
-                        link: '/book/emotion/',
+                        link: '/book/rational/',
                     },
                     {
                         text: '小说',
