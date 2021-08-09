@@ -4,10 +4,10 @@ title: 首页
 heroImage: /images/avatar.gif
 actions:
   - text: 查看目录
-    link: /menu/
+    link: /menu
     type: primary
   - text: 关于
-    link: /about/
+    link: /about
     type: secondary
 features:
   - title: 知识

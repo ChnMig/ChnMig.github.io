@@ -43,7 +43,7 @@ module.exports = {
                         link: '/book/it/',
                     },
                     {
-                        text: '情感',
+                        text: '理性',
                         link: '/book/emotion/',
                     },
                     {
@@ -67,7 +67,7 @@ module.exports = {
             },
             {
                 text: '关于',
-                link: '/about/',
+                link: '/about',
             },
             {
                 text: '数据统计',
