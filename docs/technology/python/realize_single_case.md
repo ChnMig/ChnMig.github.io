@@ -104,5 +104,83 @@ if __name__ == "__main__":
 同时为了防止多线程的资源竞争,我们使用线程锁来保证同一时间只有一个线程能访问 `__new__`
 
 ``` python
+import logging
+import threading
+from logging import StreamHandler, handlers
+
+
+
+class MyLogger:
+    # log 日志
+    # 使用线程锁防止同一时间多个线程调用__new__
+    _instance_lock = threading.Lock()
+
+    def __init__(self, *args, **kwargs):
+        # 接收参数
+        self.level = (kwargs["level"] if kwargs.get("level") else "debug")  # 日志等级
+        self.format = (kwargs["format"] if kwargs.get(
+            "format") else "%(asctime)s %(levelname)-8s[%(filename)s:%(lineno)d(%(funcName)s)] %(message)s")  # 格式化结构
+        self.console = (kwargs["console"] if kwargs.get("console") else True)  # 是否输出
+        self.file = (kwargs["file"] if kwargs.get("file") else None)  # 保存的文件名
+        self.when = (kwargs["when"] if kwargs.get("when") else "D")  # 日志文件按时间切分
+        self.backCount = (kwargs["backCount"]
+                          if kwargs.get("backCount") else 30)  # 保留日志文件最大数量
+        # 日志级别匹配
+        self.level_relations = {
+            "debug": logging.DEBUG,
+            "info": logging.INFO,
+            "warning": logging.WARNING,
+            "error": logging.ERROR,
+            "critical": logging.CRITICAL
+        }
+        self.logger = logging.getLogger(__name__)
+        self.format = logging.Formatter(self.format)
+        if not self.level_relations.get(self.level):
+            self.level = "debug"
+        self.logger.setLevel(self.level_relations[self.level])
+        if self.console:
+            # 输出
+            streamHandler = logging.StreamHandler()
+            streamHandler.setFormatter(self.format)
+            self.logger.addHandler(streamHandler)
+        if self.file:
+            # 保存
+            timeHandler = handlers.TimedRotatingFileHandler(
+                filename=self.file,
+                when=self.when,
+                backupCount=self.backCount,
+                encoding="utf-8"
+            )
+            timeHandler.setFormatter(self.format)
+            self.logger.addHandler(timeHandler)
+    
+    # 实例化时先走这里
+    def __new__(cls, *args, **kwargs):
+        # 单例模式
+        if not hasattr(MyLogger, "_instance"):  # 检查这个类有没有_instance属性
+            with MyLogger._instance_lock:  # 获取锁
+                if not hasattr(MyLogger, "_instance"):  # 这里获取到锁, 但是有可能在获取中有另一个线程已经创建了对象, 所以这里再判断一次
+                    # 没有实例化过
+                    MyLogger._instance = object.__new__(cls)  # 调用object的__new__方法, 然后自动调用本类的__init__进行实例化, 将实例化的对象赋值
+        return MyLogger._instance  # 如果已经有了这个属性直接返回
+
+if __name__ == "__main__":
+    def test():
+        l = MyLogger(level="debug", file="test.log")
+        l.logger.warning("test")
+    ts = []
+    for i in range(10):
+        t = threading.Thread(target=test)
+        t.start()
+        ts.append(t)
+    for t in ts:
+        t.join()
+
 ```
+
+运行测试代码, 发现还是会有问题
+
+调试后发现, 即使代码正确捕捉到了 `_instance` 已经存在, 将其返回了, 但是因为 `_instance` 是 `__new__` 的, 还没有进行 `__init__` 调用, 所以每次又重新运行 `__init__` , 因为 `__init__` 里有给 `logging` 添加 `handler` 的操作, 所以随着线程的增多, 每次都会多添加一个 `handler`, 导致记录一次 `logging` 记录了多个 `handler`, 每次记录日志就会重复记录很多次
+
+我们可以在 `__init__` 中不让他进行
 
