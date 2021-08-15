@@ -182,5 +182,176 @@ if __name__ == "__main__":
 
 调试后发现, 即使代码正确捕捉到了 `_instance` 已经存在, 将其返回了, 但是因为 `_instance` 是 `__new__` 的, 还没有进行 `__init__` 调用, 所以每次又重新运行 `__init__` , 因为 `__init__` 里有给 `logging` 添加 `handler` 的操作, 所以随着线程的增多, 每次都会多添加一个 `handler`, 导致记录一次 `logging` 记录了多个 `handler`, 每次记录日志就会重复记录很多次
 
-我们可以在 `__init__` 中不让他进行
+## 利用`__call__`实现
+
+我们将代码改造成
+
+``` python
+import logging
+import threading
+from logging import StreamHandler, handlers
+
+
+class SingletonType(type):
+    # 该类继承元类
+    _instance_lock = threading.Lock()  # 线程锁
+    
+    def __call__(cls, *args, **kwargs):
+         # 单例模式
+        if not hasattr(cls, "_instance"):  # 检查这个类有没有_instance属性
+            with cls._instance_lock:  # 获取锁
+                if not hasattr(cls, "_instance"):  # 这里获取到锁, 但是有可能在获取中有另一个线程已经创建了对象, 所以这里再判断一次
+                    # 没有实例化过
+                    cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)  # 没有实例化过, 继续走正常的流程
+        return cls._instance
+
+
+class MyLogger(metaclass=SingletonType):
+    # log 日志
+    # 使用线程锁防止同一时间多个线程调用__new__
+    _instance_lock = threading.Lock()
+
+    def __init__(self, *args, **kwargs):
+        # 接收参数
+        self.level = (kwargs["level"] if kwargs.get("level") else "debug")  # 日志等级
+        self.format = (kwargs["format"] if kwargs.get(
+            "format") else "%(asctime)s %(levelname)-8s[%(filename)s:%(lineno)d(%(funcName)s)] %(message)s")  # 格式化结构
+        self.console = (kwargs["console"] if kwargs.get("console") else True)  # 是否输出
+        self.file = (kwargs["file"] if kwargs.get("file") else None)  # 保存的文件名
+        self.when = (kwargs["when"] if kwargs.get("when") else "D")  # 日志文件按时间切分
+        self.backCount = (kwargs["backCount"]
+                          if kwargs.get("backCount") else 30)  # 保留日志文件最大数量
+        # 日志级别匹配
+        self.level_relations = {
+            "debug": logging.DEBUG,
+            "info": logging.INFO,
+            "warning": logging.WARNING,
+            "error": logging.ERROR,
+            "critical": logging.CRITICAL
+        }
+        self.logger = logging.getLogger(__name__)
+        self.format = logging.Formatter(self.format)
+        if not self.level_relations.get(self.level):
+            self.level = "debug"
+        self.logger.setLevel(self.level_relations[self.level])
+        if self.console:
+            # 输出
+            streamHandler = logging.StreamHandler()
+            streamHandler.setFormatter(self.format)
+            self.logger.addHandler(streamHandler)
+        if self.file:
+            # 保存
+            timeHandler = handlers.TimedRotatingFileHandler(
+                filename=self.file,
+                when=self.when,
+                backupCount=self.backCount,
+                encoding="utf-8"
+            )
+            timeHandler.setFormatter(self.format)
+            self.logger.addHandler(timeHandler)
+
+
+if __name__ == "__main__":
+    def test():
+        l = MyLogger(level="debug", file="test.log")
+        l.logger.warning("test")
+    ts = []
+    for i in range(10):
+        t = threading.Thread(target=test)
+        t.start()
+        ts.append(t)
+    for t in ts:
+        t.join()
+
+```
+
+为什么这样写, 因为Python中 `type` 是基类, 一切对象都是基于基类的, 我们创建了自己的类 `MyLogger` , 然后创建一个父类 `SingletonType`, 指定 `MyLogger` 的元类是 `SingletonType`, 当然还是继承了 `type`, 保证流程无误, 实际上只是在中间加了一层`__call__`, 我们知道 `__call__` 是在直接调用类的时候才触发的, 我们每次创建一个对象, 实际上都需要调用元类的`__call__`, 所以我们定义元类的`__call__`即可每次都执行. 
+
+同时也因为我们定义的是`__call__`, 也不会出现了重复调用`__new__`和`__init__`的问题了, 因为本身这两个函数就在实例化的时候在`type`的`__call__`里调用的
+
+[一文搞懂什么是Python的metaclass - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/98440398)
+
+当然对于自定义`metaclass`, 开发者们有相当一部分是认为其会破坏代码的可读性等, 如果你也这么觉得, 我们可以使用下一个方法
+
+## 自写初始化方法
+
+我们回看第一种方法, 之所以有问题是每次在`__init__`时会添加一个`handler`, 那么我们可以修改逻辑, 让他通过别的方法来添加`handler`
+
+``` python
+import logging
+import threading
+from logging import StreamHandler, handlers
+
+
+
+class MyLogger:
+    # log 日志
+    # 使用线程锁防止同一时间多个线程调用__new__
+    _instance_lock = threading.Lock()
+
+    def _instance_init(self, *args, **kwargs):
+        # 接收参数
+        self.level = (kwargs["level"] if kwargs.get("level") else "debug")  # 日志等级
+        self.format = (kwargs["format"] if kwargs.get(
+            "format") else "%(asctime)s %(levelname)-8s[%(filename)s:%(lineno)d(%(funcName)s)] %(message)s")  # 格式化结构
+        self.console = (kwargs["console"] if kwargs.get("console") else True)  # 是否输出
+        self.file = (kwargs["file"] if kwargs.get("file") else None)  # 保存的文件名
+        self.when = (kwargs["when"] if kwargs.get("when") else "D")  # 日志文件按时间切分
+        self.backCount = (kwargs["backCount"]
+                          if kwargs.get("backCount") else 30)  # 保留日志文件最大数量
+        # 日志级别匹配
+        self.level_relations = {
+            "debug": logging.DEBUG,
+            "info": logging.INFO,
+            "warning": logging.WARNING,
+            "error": logging.ERROR,
+            "critical": logging.CRITICAL
+        }
+        self.logger = logging.getLogger(__name__)
+        self.format = logging.Formatter(self.format)
+        if not self.level_relations.get(self.level):
+            self.level = "debug"
+        self.logger.setLevel(self.level_relations[self.level])
+        if self.console:
+            # 输出
+            streamHandler = logging.StreamHandler()
+            streamHandler.setFormatter(self.format)
+            self.logger.addHandler(streamHandler)
+        if self.file:
+            # 保存
+            timeHandler = handlers.TimedRotatingFileHandler(
+                filename=self.file,
+                when=self.when,
+                backupCount=self.backCount,
+                encoding="utf-8"
+            )
+            timeHandler.setFormatter(self.format)
+            self.logger.addHandler(timeHandler)
+    
+    # 实例化时先走这里
+    def __new__(cls, *args, **kwargs):
+        # 单例模式
+        if not hasattr(MyLogger, "_instance"):  # 检查这个类有没有_instance属性
+            with MyLogger._instance_lock:  # 获取锁
+                if not hasattr(MyLogger, "_instance"):  # 这里获取到锁, 但是有可能在获取中有另一个线程已经创建了对象, 所以这里再判断一次
+                    # 没有实例化过
+                    MyLogger._instance = object.__new__(cls)  # 调用object的__new__方法, 然后自动调用本类的__init__进行实例化, 将实例化的对象赋值
+                    MyLogger._instance._instance_init(*args, **kwargs)  # 只有第一次初始化时才执行handler
+        return MyLogger._instance  # 如果已经有了这个属性直接返回
+
+if __name__ == "__main__":
+    def test():
+        l = MyLogger(level="debug", file="test.log")
+        l.logger.warning("test")
+    ts = []
+    for i in range(10):
+        t = threading.Thread(target=test)
+        t.start()
+        ts.append(t)
+    for t in ts:
+        t.join()
+
+```
+
+保证每次只在需要的时候添加`handler` 即可
 
