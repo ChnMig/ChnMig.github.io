@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
 ```
 
-在这个代码中, 我们指定了`MyLogger` 的元类是 `SingletonType`,  其实在python中实例化对象都是在声明这个类时执行`type`的`__new__`和`__init__`, 然后在创建对象时执行`type`的`__call__`, 在`__call__`中调用自定义类的`__new__`和`__init__`
+在这个代码中, 我们指定了`MyLogger` 的元类是 `SingletonType`,  其实在python中实例化对象都是在声明这个类时执行`type`的`__new__`和`__init__`(这里每次声明一个新的类都会走一遍), 然后在创建对象时执行`type`的`__call__`, 在`__call__`中调用自定义类的`__new__`和`__init__`
 
 我们主要是修改了`SingletonType` 的`__call__`, 当实例化时首先判断是否存在了, 不存在再走`super` 也就是 `type` 的`__call__`流程
 
