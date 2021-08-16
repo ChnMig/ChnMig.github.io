@@ -202,7 +202,7 @@ class SingletonType(type):
             with cls._instance_lock:  # 获取锁
                 if not hasattr(cls, "_instance"):  # 这里获取到锁, 但是有可能在获取中有另一个线程已经创建了对象, 所以这里再判断一次
                     # 没有实例化过
-                    cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)  # 没有实例化过, 继续走正常的流程
+                    cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)  # 没有实例化过, 调用type基类的__call__方法, 走正常的流程
         return cls._instance
 
 
@@ -265,9 +265,9 @@ if __name__ == "__main__":
 
 ```
 
-为什么这样写, 因为Python中 `type` 是基类, 一切对象都是基于基类的, 我们创建了自己的类 `MyLogger` , 然后创建一个父类 `SingletonType`, 指定 `MyLogger` 的元类是 `SingletonType`, 当然还是继承了 `type`, 保证流程无误, 实际上只是在中间加了一层`__call__`, 我们知道 `__call__` 是在直接调用类的时候才触发的, 我们每次创建一个对象, 实际上都需要调用元类的`__call__`, 所以我们定义元类的`__call__`即可每次都执行. 
+在这个代码中, 我们指定了`MyLogger` 的元类是 `SingletonType`,  其实在python中实例化对象都是在声明这个类时执行`type`的`__new__`和`__init__`, 然后在创建对象时执行`type`的`__call__`, 在`__call__`中调用自定义类的`__new__`和`__init__`
 
-同时也因为我们定义的是`__call__`, 也不会出现了重复调用`__new__`和`__init__`的问题了, 因为本身这两个函数就在实例化的时候在`type`的`__call__`里调用的
+我们主要是修改了`SingletonType` 的`__call__`, 当实例化时首先判断是否存在了, 不存在再走`super` 也就是 `type` 的`__call__`流程
 
 [一文搞懂什么是Python的metaclass - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/98440398)
 
