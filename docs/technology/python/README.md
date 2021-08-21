@@ -19,3 +19,10 @@
 **创建时间**: 2019/12/27
 
 **导读**: 如何实现python的单例模式
+
+### [requirements语法](./requirements_syntax)
+
+**创建时间**: 2019/12/27
+
+**导读**: requirements是python的依赖管理文件, 其有一些语法, 可以帮助我们更好的控制安装
+
