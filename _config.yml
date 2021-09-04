@@ -103,7 +103,7 @@ theme: icarus
 ## https://hexo.io/zh-cn/docs/one-command-deployment#Git
 deploy:
   type: git
-  repo: https://github.com/ChnMig/ChnMig.github.io #https://bitbucket.org/JohnSmith/johnsmith.bitbucket.io
+  repo: git@github.com:ChnMig/ChnMig.github.io.git
   branch: gh-pages
   message: 
 
