@@ -104,7 +104,7 @@ theme: icarus
 deploy:
   type: git
   repo: https://github.com/ChnMig/ChnMig.github.io #https://bitbucket.org/JohnSmith/johnsmith.bitbucket.io
-  branch: 
+  branch: gh-pages
   message: 
 
 # emoji
