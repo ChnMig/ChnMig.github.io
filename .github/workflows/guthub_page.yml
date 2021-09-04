@@ -1,11 +1,6 @@
 name: Deploy
 
-on:
-  # 每当 push 到 main 分支时触发部署
-  push:
-    branches: [main]
-  # 手动触发部署
-  workflow_dispatch:
+on: [push]
 
 jobs:
   build:
@@ -33,9 +28,11 @@ jobs:
     # Deploy hexo blog website.
     - name: Deploy
       id: deploy
-      uses: sma11black/hexo-action@v1.0.4
+      uses: sma11black/hexo-action@v1.0.3
       with:
         deploy_key: ${{ secrets.DEPLOY_KEY }}
+        user_name: your github username  # (or delete this input setting to use bot account)
+        user_email: your github useremail  # (or delete this input setting to use bot account)
         commit_msg: ${{ github.event.head_commit.message }}  # (or delete this input setting to use hexo default settings)
     # Use the output from the `deploy` step(use for test action)
     - name: Get the output
