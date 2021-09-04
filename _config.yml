@@ -99,10 +99,13 @@ ignore:
 ## Themes: https://hexo.io/themes/
 theme: icarus
 
-# Deployment
-## Docs: https://hexo.io/docs/one-command-deployment
+# deploy
+## https://hexo.io/zh-cn/docs/one-command-deployment#Git
 deploy:
-  type: ''
+  type: git
+  repo: https://github.com/ChnMig/ChnMig.github.io #https://bitbucket.org/JohnSmith/johnsmith.bitbucket.io
+  branch: 
+  message: 
 
 # emoji
 ## https://github.com/crimx/hexo-filter-github-emojis
@@ -114,11 +117,3 @@ githubEmojis:
     display: inline
     vertical-align: middle 
   localEmojis:
-
-# deploy
-## https://hexo.io/zh-cn/docs/one-command-deployment#Git
-deploy:
-  type: git
-  repo: https://github.com/ChnMig/ChnMig.github.io #https://bitbucket.org/JohnSmith/johnsmith.bitbucket.io
-  branch: 
-  message: 
