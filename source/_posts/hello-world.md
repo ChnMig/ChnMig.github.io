@@ -1,8 +1,17 @@
 ---
-title: 一篇文章
-date: 2020-01-01
-toc: true
-excerpt: 这是一篇关于...
+title: 文章标题              
+date: 2020-01-01            
+updated: 2020-01-01         
+comments: true              
+toc: true                   
+excerpt: 这是一遍文章...      
+tags:                       
+- tag1
+- tag2
+categories:                 
+- categories1
+cover: /images/logo.gif     
+thumbnail: /images/logo.gif  
 ---
 Welcome to [Hexo](https://hexo.io/)! This is your very first post. Check [documentation](https://hexo.io/docs/) for more info. If you get any problems when using Hexo, you can find the answer in [troubleshooting](https://hexo.io/docs/troubleshooting.html) or you can ask me on [GitHub](https://github.com/hexojs/hexo/issues).
 

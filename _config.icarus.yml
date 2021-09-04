@@ -110,6 +110,7 @@ navbar:
         类别: /categories
         标签: /tags
         关于: /about
+        访问统计: http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609
     # # Links to be shown on the right of the navigation bar
     # links:
     #     Download on GitHub:
@@ -141,6 +142,8 @@ article:
         fold: unfolded
     # Whether to show estimated article reading time
     readtime: true
+    # Hide the update time when the update time is the same as the creation time
+    update_time: auto
     # Article licensing block
     licenses:
         Creative Commons:
@@ -161,7 +164,7 @@ search:
 comment:
     type: disqus
     # Disqus shortname
-    shortname: 'chnmig.github.io'
+    shortname: 'chnmig'
 # # Donate plugin configurations
 # # https://ppoffice.github.io/hexo-theme-icarus/categories/Plugins/Donation/
 # donates:
