@@ -11,7 +11,6 @@ categories:
 - 编程
 ---
 
-
 [zap](https://github.com/uber-go/zap) 是 uber 开源的一个日志记录的包, uber 在 go 的领域建树颇多, zap 更是优秀, 相比于自带的 log ,他有更多的功能, 当然, 最显眼的还是他很快, 本文介绍 zap 模块的基本使用
 
 ## 简单使用
