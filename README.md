@@ -102,19 +102,19 @@ thumbnail: /image/logo.ico  `文章缩略图`
 
 ``` markdown
 ---
-title: 文章标题              
-date: 2020-01-01            
-updated: 2020-01-01         
-comments: true              
-toc: true                   
-excerpt: 这是一篇文章...      
-tags:                       
+title: 文章标题
+date: 2020-01-01
+updated: 2020-01-01
+comments: true
+toc: true
+excerpt: 这是一篇文章...
+tags:
 - tag1
 - tag2
-categories:                 
+categories:
 - categories1
-cover: /images/logo.ico     
-thumbnail: /image/logo.ico  
+cover: /images/logo.ico
+thumbnail: /image/logo.ico
 ---
 ```
 
