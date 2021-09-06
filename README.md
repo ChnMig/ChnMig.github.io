@@ -48,6 +48,7 @@ npm install -g npm-check-updates
 hexo init .
 hexo install
 npm install -S hexo-theme-icarus
+ncu
 ncu -u
 npm install
 npm install hexo-filter-github-emojis --save
