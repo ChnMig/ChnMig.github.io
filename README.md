@@ -48,11 +48,12 @@ npm install -g npm-check-updates
 hexo init .
 hexo install
 npm install -S hexo-theme-icarus
+npm install hexo-filter-github-emojis hexo-deployer-git bulma-stylus hexo-renderer-inferno --save
+npm un hexo-renderer-marked --save
+npm i hexo-renderer-markdown-it --save
 ncu
 ncu -u
 npm install
-npm install hexo-filter-github-emojis --save
-npm install hexo-deployer-git --save
 # npm uninstall -g hexo-cli
 npm list -g
 ```
@@ -63,7 +64,7 @@ npm list -g
 hexo config theme icarus
 hexo server
 # https://githubmemory.com/repo/ppoffice/hexo-theme-icarus/issues/855?page=3
-npm install --save bulma-stylus hexo-renderer-inferno
+npm install bulma-stylus hexo-renderer-inferno --save 
 hexo server
 ```
 
