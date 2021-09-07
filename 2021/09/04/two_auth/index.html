@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>浅谈双重认证 - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="关于两步认证, 之前一直没有具体的了解过"><meta property="og:type" content="blog"><meta property="og:title" content="浅谈双重认证"><meta property="og:url" content="https://chnmig.github.io/2021/09/04/two_auth/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="关于两步认证, 之前一直没有具体的了解过"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://chnmig.github.io/img/og_image.png"><meta property="article:published_time" content="2021-09-03T16:00:00.000Z"><meta property="article:modified_time" content="2021-09-03T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="架构"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://chnmig.github.io/2021/09/04/two_auth/"},"headline":"浅谈双重认证","image":["https://chnmig.github.io/img/og_image.png"],"datePublished":"2021-09-03T16:00:00.000Z","dateModified":"2021-09-03T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://chnmig.github.io/images/logo.gif"}},"description":"关于两步认证, 之前一直没有具体的了解过"}</script><link rel="canonical" href="https://chnmig.github.io/2021/09/04/two_auth/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?5306a4ae74c103fc71e3fb36eb8f9609";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 上午12:00:00">2021-09-04</time>发表</span><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 上午12:00:00">2021-09-04</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">7 分钟读完 (大约1078个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">浅谈双重认证</h1><div class="content"><h2 id="什么是双重认证">什么是双重认证</h2>
+<p>两步认证是一个概念, 并不是指必须经过某种方式去实现, 而是指对于鉴权来讲, 在之前的通过账号密码的方式再加一层校验, 至于怎么加, 加的方式是什么并不是规定的, 当然, 目前国外比较通用的是使用 谷歌身份验证器/微软认证器 等来做, 国内的有使用短信的, 本文着重来说 谷歌身份验证器/微软认证器 等一些国外的认证流程, 因为他们都遵循了统一的标准(统一的算法)</p>
+<h2 id="为什么需要双重认证">为什么需要双重认证</h2>
+<p>传统的一步认证一般是账号密码, 因为账号密码是固定的, 所以如果密码泄露, 基本这个账户的一切都不再属于你, 而双重认证的原理决定了他是动态的, 是每一段时间变化一次的(一般30秒), 所以他相对来说比较安全, 如果你的密码暴露了但是二次认证生成的Code无法获取到照样无法进行操作, 所以双重认证的安全性更高</p>
+<h2 id="双重认证流程">双重认证流程</h2>
+<p>一般的双重认证采用 TOTP 算法, 其算法保证了相同Key的情况下每一段时间内都可以生成同样的一个6位Code, TOTP算法资料可看 <a target="_blank" rel="noopener" href="https://baike.baidu.com/item/TOTP%E7%AE%97%E6%B3%95/22810708">百度百科</a> <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%9F%BA%E4%BA%8E%E6%97%B6%E9%97%B4%E7%9A%84%E4%B8%80%E6%AC%A1%E6%80%A7%E5%AF%86%E7%A0%81%E7%AE%97%E6%B3%95">wiki</a></p>
+<p>TOTP具体实现可看<a target="_blank" rel="noopener" href="https://github.com/pquerna/otp">github</a></p>
+<p>以 <a target="_blank" rel="noopener" href="https://id.atlassian.com/">atlassian</a> 为例, 来我们开启走流程开启双重认证, 当我们选择开启时</p>
+<p>可以看到该网站提供了一个二维码给我们, 此时我们需要在手机上下载 谷歌身份验证器 app, 打开可以看到添加一个双重认证的方式有两种, 扫描二维码和手动输入, 我们来提取这个二维码的信息, 发现里面是一个链接, 类似于</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">otpauth:<span class="comment">//totp/user@example.com?secret=PVKG6TZFHJUEMSK5ORYD3LI&amp;issuer=Atlassian</span></span><br></pre></td></tr></tbody></table></figure>
+<p>我们按照规则来解析, 实际上是</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">otpauth:<span class="comment">//totp/认证项目名称?secret=唯一KEY&amp;issuer=签发者</span></span><br></pre></td></tr></tbody></table></figure>
+<p>需要注意的是, 我们每次重新申请开启双重认证时出现的二维码解析出的Key都是变化的</p>
+<p>当我们使用 谷歌身份验证器 扫描后, 会出现一条新的记录</p>
+<p>你也可以按照此规则编出来一个链接通过生成二维码的小工具让软件扫扫看</p>
+<p>我们还原此过程, 当app扫到码之后, 获取到项目名称和Key与签发者, 按照TOTP算法生成6位Code, 展示出来, Code是30s一变, 但是注意, 此时网站与App并无联系, App也并不负责对Key等信息校验真实性</p>
+<p>而我们需要将生成的Code输入进网站的下方验证码这里, 通过后才会与App建立绑定关系(网站端单纯的建立逻辑的绑定关系)</p>
+<p>还原此过程, 网站端并不知道App有没有生成, 但是因为App都遵循统一的 TOTP 算法, 因此网站端也可以生成当时的正确Code, 当我们提交的Code与网站端生成的Code相符时, 即网站将该Key绑定(也就是图上说的 连接后，我们会记住您的手机，以便您每次登录时都可以使用。), 绑定后, 网站对这个通过的Key进行记录, 每次需要验证时网站根据Key生成Code, 与用户提交的Code比对, 通过即可</p>
+<p>通过上述流程, 我们可以发现, 实际上App端只掌握了一个Key, 但是App本身并不知道Key是否是正确的, 他们两个实际上永远没有交流, 这样就很安全</p>
+<p>经测试, 网站一般会只允许一个Key存活, 也就是当我们重新申请一个Key, 原先的Key则失效, 当然对于App是不知道的, 但是当我们提交认证时网站就会报错.</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>浅谈双重认证</p><p><a href="https://chnmig.github.io/2021/09/04/two_auth/">https://chnmig.github.io/2021/09/04/two_auth/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>ChnMig</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2021-09-04</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2021-09-04</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%9E%B6%E6%9E%84/">架构</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2021/09/04/rust_programming_language(4)/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Rust程序设计语言(4)</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2021/09/04/website_architecture(2)/"><span class="level-item">大型网站技术架构-笔记(2)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="disqus_thread"><noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div><script>var disqus_config = function () {
+            this.page.url = 'https://chnmig.github.io/2021/09/04/two_auth/';
+            this.page.identifier = '2021/09/04/two_auth/';
+        };
+        (function() {
+            var d = document, s = d.createElement('script');  
+            s.src = '//' + 'chnmig' + '.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();</script></div></div></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#什么是双重认证"><span class="level-left"><span class="level-item">1</span><span class="level-item">什么是双重认证</span></span></a></li><li><a class="level is-mobile" href="#为什么需要双重认证"><span class="level-left"><span class="level-item">2</span><span class="level-item">为什么需要双重认证</span></span></a></li><li><a class="level is-mobile" href="#双重认证流程"><span class="level-left"><span class="level-item">3</span><span class="level-item">双重认证流程</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2021 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/mhchem.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

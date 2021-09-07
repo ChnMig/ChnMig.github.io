@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>大型网站技术架构-笔记(2) - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="大型网站技术架构这本书很出名, 不知道看过一遍后能不能唬住面试官"><meta property="og:type" content="blog"><meta property="og:title" content="大型网站技术架构-笔记(2)"><meta property="og:url" content="https://chnmig.github.io/2021/09/04/website_architecture(2)/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="大型网站技术架构这本书很出名, 不知道看过一遍后能不能唬住面试官"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://chnmig.github.io/img/og_image.png"><meta property="article:published_time" content="2021-09-03T16:00:00.000Z"><meta property="article:modified_time" content="2021-09-03T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="架构"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://chnmig.github.io/2021/09/04/website_architecture(2)/"},"headline":"大型网站技术架构-笔记(2)","image":["https://chnmig.github.io/img/og_image.png"],"datePublished":"2021-09-03T16:00:00.000Z","dateModified":"2021-09-03T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://chnmig.github.io/images/logo.gif"}},"description":"大型网站技术架构这本书很出名, 不知道看过一遍后能不能唬住面试官"}</script><link rel="canonical" href="https://chnmig.github.io/2021/09/04/website_architecture(2)/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?5306a4ae74c103fc71e3fb36eb8f9609";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 上午12:00:00">2021-09-04</time>发表</span><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 上午12:00:00">2021-09-04</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">26 分钟读完 (大约3921个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">大型网站技术架构-笔记(2)</h1><div class="content"><h2 id="瞬时响应-网站的高性能架构">瞬时响应: 网站的高性能架构</h2>
+<blockquote>
+<p>A网站在100并发的时候, 接口响应时间是1s, 200并发时是10s</p>
+<p>B网站在100并发时是1.5s, 200并发是还是1.5s</p>
+<p>这种情况下, 用户认为哪个网站访问快呢?</p>
+<p>网站性能是客观的指标, 可以具体到响应时间/吞吐量等技术可以衡量的技术指标, 同时也是使用者的主观感受, 感受这个东西就比较微妙, 不好用技术指标来统计</p>
+</blockquote>
+<h2 id="网站性能测试">网站性能测试</h2>
+<blockquote>
+<p>性能测试是性能优化的前提和基础, 也是性能优化结果的检查的度量标准. 不同视角下的网站性能有不同标准和优化手段</p>
+</blockquote>
+<h3 id="用户视角">用户视角</h3>
+<p>从用户角度, 网站性能指用户在浏览器上直观的感受慢还是快, 那么, 用户感受到的时间, 其实流程是: 用户点击鼠标 &gt; 计算机浏览器解析指令 &gt; 找到需要发生的请求 - 发起请求 &gt; 网络通信 &gt; 服务器端接收到请求 &gt; 返回结果 &gt; 网络通信 &gt; 浏览器接收到结果 &gt; 解析结果 &gt; 展示到浏览器上</p>
+<p>所以, 不同的浏览器/不同的计算机/不同的网络情况 可能导致用户感受到的延迟远远大于服务器请求的耗时.</p>
+<p>在实际情况, 考虑使用前端手段优化速度, 比如</p>
+<ul>
+<li>优化HTML样式</li>
+<li>利用浏览器缓存</li>
+<li>使用CDN/反向代理</li>
+</ul>
+<p>目的是使浏览器更快显示用户感兴趣的内容, 尽可能近的获取页面内容, 即使不优化程序和架构, 也可以很大程度改善用户视角下的网站性能</p>
+<h3 id="开发人员视角">开发人员视角</h3>
+<p>开发人员主要考虑程序本身及相关子系统的性能, 包括 响应延迟/系统吞吐量/并发处理能力/系统稳定性 等技术指标.</p>
+<p>在实际情况, 考虑使用技术方面的优化手段, 比如</p>
+<ul>
+<li>使用缓存加速数据读取</li>
+<li>使用集群提高吞吐</li>
+<li>使用异步加快请求响应与实现削峰</li>
+<li>使用代码优化手段</li>
+</ul>
+<h3 id="运维人员视角">运维人员视角</h3>
+<p>运维人员更关心基础设施的性能和资源利用率, 比如网络带宽/服务器硬件配置/数据中心网络架构/服务器/资源利用率</p>
+<p>优化手段有:</p>
+<ul>
+<li>建设骨干网络提高带宽</li>
+<li>使用高性价比服务器</li>
+<li>利用虚拟化技术提高资源利用率</li>
+</ul>
+<h2 id="性能测试指标">性能测试指标</h2>
+<p>不同视角下有不同的性能标准, 不同标准有不同的指标</p>
+<h3 id="响应时间">响应时间</h3>
+<p>一般指执行一个操作需要的时间, 从请求发送到收到最后的响应需要的时间, 是重要的指标, 直接反映系统的‘快慢’</p>
+<p>测试响应时间需要请求很多次, 比如一万次, 计算其平均值</p>
+<h3 id="并发数">并发数</h3>
+<p>指系统同时处理请求的数目, 可反映系统的负载特性</p>
+<p>测试并发数时一般通过多线程模拟多个用户来模拟用户进行操作, 为了更加真实, 通常在两个请求间加入一个随机的等待时间, 这个时间被称作思考时间</p>
+<h3 id="吞吐量">吞吐量</h3>
+<p>指单位时间内系统处理的请求数量, 体现系统的整体处理能力. 常用的量化指标有:</p>
+<ul>
+<li>TPS-每秒事务数-事务指一系列正常操作(最常用)</li>
+<li>HPS-每秒HTTP请求数-并发</li>
+<li>QPS-每秒查询数</li>
+</ul>
+<p>在系统并发数由小到大的过程中. 服务器资源消耗也逐渐增大, 一般的, 系统吞吐量应该先逐渐增加, 到一定极限后继续增加会导致吞吐量下降, 然后到达崩溃点后资源耗尽, 吞吐量为0</p>
+<p>对应的, 响应时间先是小幅度的上升, 到达吞吐量极限后快速的上升, 到达崩溃点后失去响应</p>
+<p>网站优化需要尽量提高系统吞吐量, 最大限度利用服务器资源</p>
+<h3 id="性能计数器">性能计数器</h3>
+<p>是描述服务器和操作系统性能的一些指标, 包括 线程数量/内存使用/CPU使用/网络IO/磁盘占用 等指标, 当发现指标超过预定的报警阀值时应及时联系运维与开发人员处理</p>
+<h2 id="性能测试方法">性能测试方法</h2>
+<h3 id="性能测试">性能测试</h3>
+<p>以系统设计时的性能指标为目标, 对系统不断施加压力, 验证系统在资源的可接受范围内是否能达到性能预期</p>
+<h3 id="负载测试">负载测试</h3>
+<p>向系统不断的增加并发请求来增加系统压力, 一直到系统的某项或者多项性能指标达到安全临界值, 安全临界值的表现为超过该值之后系统处理能力会下降</p>
+<h3 id="压力测试">压力测试</h3>
+<p>超过安全负载的情况下继续对系统施加压力, 直到系统崩溃</p>
+<h3 id="稳定性测试">稳定性测试</h3>
+<p>被测试的系统在指定的 硬件/软件/网络环境 下, 给系统加载一定的业务压力, 使系统运行较长时间来观测系统是否稳定</p>
+<h2 id="性能优化策略">性能优化策略</h2>
+<h3 id="问题分析">问题分析</h3>
+<p>如果有用户上报网站使用起来‘慢’, 必须对请求经历的各个环节进行排查, 定位问题</p>
+<p>必须检查请求处理的各个环节的日志, 分析响应时间, 检查监控数据, 分析问题是代码问题还是硬件或者网络问题</p>
+<h3 id="Web前端优化">Web前端优化</h3>
+<blockquote>
+<p>一般指网站业务逻辑前的部分, 比如: 浏览器加载/网站视图模型/图片服务/CDN服务 等</p>
+</blockquote>
+<ul>
+<li>减少HTTP请求 - HTTP是无状态的应用层协议, 每次HTTP都要去建立链接和传输, 所以减少HTTP请求数量可提高性能, 比如合并 CSS/JS/图片 等资源</li>
+<li>使用浏览器缓存 - 一般的, CSS/JS/ICON 等静态资源文件更新频率较慢, 将这些文件缓存在浏览器中可以很大的改善性能. 可以设置 HTTP 头的 Cache-Control 和 Exprise 属性来控制. 还要保证在发生更改时需要及时同步到用户的客户端中(不使用缓存), 可放置一个新的JS并更改主页面的HTML的JS引用将其引用到新的JS中, 需要更新N个JS时, 最好一次更新几个或一个避免访问量激增造成的网络堵塞</li>
+<li>启用压缩 - 对文件(JS/CSS/HTML…)进行压缩, 在浏览器端进行解压缩可减少网络传输时间, 但是会对服务器和浏览器产生一定的压力</li>
+<li>CSS放在页面最上面, JS放在页面最下面 - 浏览器在下载完CSS才会对页面进行渲染, 所以将CSS放置在页面最上方让浏览器尽快下载, JS在加载后立刻执行, 有可能对页面进行阻塞, 造成页面显示缓慢, 因此JS放在页面最下面. 例外是页面解析需要使用JS, 那么就不要放置在底部</li>
+<li>减少Cookie传播 - Cookie一般保存一些用户的信息, 有可能比较大, 会对数据的传输造成负担, 因此要对写入Cookie的数据进行慎重考虑, 同时为了避免访问静态资源时也携带Cookie造成无意义的损耗, 可将静态资源设置成独立域名避免请求静态资源时发生Cookie</li>
+</ul>
+<h3 id="CDN加速">CDN加速</h3>
+<p>CDN(内容分发网络)的本质是一个缓存, 将缓存放置在离用户最近的地方(物理), 使用户最快的获取数据</p>
+<p>CDN部署在网络运营商的机房, 运营商又是终端用户的网络服务提供商, 因此用户请求数据会先到达CDN服务器, 当CDN存在用户需要的数据时直接从CDN返回, 这样可以加快用户访问速度, 同时减少数据中心的负载</p>
+<p>CDN一般缓存静态资源, 比如图片/文件/css/JS等, 将其缓存到CDN会极大改善网页速度</p>
+<h3 id="反向代理">反向代理</h3>
+<p>用户的请求发送到反向代理服务器, 反向代理服务器再转发到内部的服务, 因此, 反向代理服务器也可以保护网站的安全, 来自于互联网的请求必须经过代理服务器, 相当于在Web服务器和网络之间建立了一堵墙, 现在一般使用 Nginx 作为反向代理的服务, 可以完成多个操作, 比如</p>
+<ul>
+<li>使用缓存 - 用户第一次访问静态资源时将该资源缓存到反向代理服务器中, 另一位用户访问时直接从代理服务器返回, 也可以将弱动态数据(博客/帖子/词条等一些实时性不强的数据)存储在缓存中, 当有数据变化时内部通知反向代理服务器将该缓存失效</li>
+<li>负载均衡 - 如某个功能有多台服务器处理, 可将请求按照规则转发到某一台服务器, 提高系统处理能力和性能</li>
+</ul>
+<h2 id="应用服务器性能优化">应用服务器性能优化</h2>
+<h3 id="分布式缓存">分布式缓存</h3>
+<p>缓存一般指将数据存储在访问速度相对较高的存储介质中供系统使用, 缓存的访问速度快, 可以减少数据的访问时间, 另一方面如果缓存的数据是经过计算得到的, 那么该数据无需每次重新计算即可直接使用, 还起到了减少计算时间的作用</p>
+<p>但是以下几种情况不适合使用缓存</p>
+<ul>
+<li>频繁修改的数据 - 一般来说数据的读写比在2:1以上才需要加入缓存</li>
+<li>没有热点的访问 - 访问量不大的数据没必要放置进缓存</li>
+<li>数据不一致/脏读 - 缓存有过期时间, 有可能会出现缓存还没有过期时实际的数据已经更新的情况, 所以缓存的过期时间需根据实际情况确定, 有一种策略是数据更新时立即更新缓存, 这会带来更多系统开销和事务一致性的问题</li>
+</ul>
+<h4 id="缓存可用性"><strong>缓存可用性</strong></h4>
+<p>缓存的目的是提高数据读取性能, 理论上讲, 缓存数据的丢失或者不可用不会影响到程序的处理</p>
+<p>但是随着业务的发展, 缓存会承担大部分的数据访问压力, 此时数据库的架构有可能会更多的依赖缓存, 如果缓存服务崩溃, 数据从数据库读取, 数据库可能会因为巨大的压力而宕机, 这种一般叫做缓存雪崩</p>
+<p>为避免这种情况, 有的方法是对缓存进行热备, 但是这种设计本末倒置, 缓存本来就不应该当作可靠的数据源使用</p>
+<p>比较好的方法是建立分布式缓存服务集群, 将缓存数据分布式存储. 就算其中一台宕机也不会对数据库产生多大压力</p>
+<blockquote>
+<p>产品在设计之初就需要一个明确的定位, 什么产品实现什么功能, 什么不是产品的特征, 在产品的生命周期中, 会有很多困难和诱惑来修改产品的发展方向. 左右摇摆/什么都想做 的产品, 最后很有可能会成为一个没有生命力的四不像</p>
+</blockquote>
+<p><strong>缓存预热</strong></p>
+<p>缓存中存放热点数据, 热点数据是缓存系统使用LRU(最近最久未使用算法)对数据筛选淘汰出来的, 这个过程时间较久, 新启动的缓存系统在重建缓存数据的过程中, 对性能和数据库的提升都不高, 所以最好在缓存系统启动时把热点数据加载好, 这种手段叫 缓存预热, 比如 省市区三级联动/类目信息 等, 可以在缓存系统启动时加载到系统中</p>
+<p><strong>缓存穿透</strong></p>
+<p>对于不恰当的业务, 或者遭受到了恶意的攻击, 持续的高并发的请求某个不存在的数据, 缓存没有获取到这个不存在的数据, 那么会到数据库检索, 导致数据库压力大, 一般的对策是在这个频繁访问的数据到达阀值后将该数据也加入缓存, 其Value为Null</p>
+<h3 id="Memcached">Memcached</h3>
+<p><a target="_blank" rel="noopener" href="https://www.memcached.org/">https://www.memcached.org/</a></p>
+<blockquote>
+<p>Memcached 是非常出名的分布式缓存框架, 被大量网站使用. 他的优点是 设计简单/服务器集群间互不通信/海量数据可伸缩</p>
+</blockquote>
+<p><strong>通信协议</strong></p>
+<p>Memcached使用TCP协议进行通信, 其序列化协议是基于文本的自定义协议, 非常简单, 大概是以一个命令关键字开头, 后面是命令操作</p>
+<p><strong>丰富的客户端</strong></p>
+<p>因其通信协议很简单, 因此主流的语言都有对应的客户端, 开发很方便</p>
+<p><strong>高性能的网络通信</strong></p>
+<p>服务端的通信模块基于 Libevent, Libevent是一个支持事件触发的网络通信库©, 其有 稳定/轻量/快速 等特点</p>
+<p><strong>高效的内存管理</strong></p>
+<p>使用固定内存分配, 避免了内存碎片管理的问题</p>
+<p><strong>集群架构互不通信</strong></p>
+<p>其分布式架构, 多台节点之间互不通信, 由客户端分布式算法来确定缓存存放在哪个节点, 取时根据key确定存储机器再进行获取, 我们可以将其比喻成一个圆, 有两个节点就相当于将这个圆分两半, 通过客户端hash一致性算法计算出来key是哪一个区间. 当添加或者减少某个节点, 也只影响这个节点相关的一个节点的数据</p>
+<h3 id="异步操作">异步操作</h3>
+<blockquote>
+<p>任何可以晚点做的事情都应该晚点再做</p>
+</blockquote>
+<p>异步一般搭配消息队列, 不仅可改善网站的扩展性. 还可以改善网站的性能. 需要注意的是, 用户在接收到返回时可能只是入了队列还未执行完成, 因此业务要相应的进行调整</p>
+<h3 id="使用集群">使用集群</h3>
+<p>将业务搭载在集群中, 由负载均衡服务进行任务的分配, 比如我有三台机器进行负载均衡, 那么每台机器的压力则为全部的 3/1, 能有效提高效率和减少负载</p>
+<h2 id="代码优化">代码优化</h2>
+<p><strong>多线程</strong></p>
+<p>多线程带来的是效率的提升, 但是随之而来的是BUG的难以调试和线程安全问题, 线程安全的解决一般如下</p>
+<ul>
+<li>将对象设计为无状态</li>
+<li>使用局部对象</li>
+<li>并发访问资源时使用锁</li>
+</ul>
+<p><strong>资源复用</strong></p>
+<p>系统运行时, 一定要减少开销很大的系统资源的创建和销毁, 比如 数据库的连接/网络通信连接/线程/复杂对象 等, 资源复用有两种模式</p>
+<ul>
+<li>单例模式</li>
+<li>对象池</li>
+</ul>
+<p><strong>数据结构</strong></p>
+<p>pass</p>
+<p><strong>垃圾回收</strong></p>
+<p>现在好多语言自己处理垃圾回收</p>
+<h2 id="存储性能优化">存储性能优化</h2>
+<ul>
+<li>使用SSD(固态硬盘), 但是成本会提高</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>大型网站技术架构-笔记(2)</p><p><a href="https://chnmig.github.io/2021/09/04/website_architecture(2)/">https://chnmig.github.io/2021/09/04/website_architecture(2)/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>ChnMig</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2021-09-04</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2021-09-04</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%9E%B6%E6%9E%84/">架构</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2021/09/04/two_auth/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">浅谈双重认证</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2021/09/04/website_architecture(1)/"><span class="level-item">大型网站技术架构-笔记(1)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">评论</h3><div id="disqus_thread"><noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div><script>var disqus_config = function () {
+            this.page.url = 'https://chnmig.github.io/2021/09/04/website_architecture(2)/';
+            this.page.identifier = '2021/09/04/website_architecture(2)/';
+        };
+        (function() {
+            var d = document, s = d.createElement('script');  
+            s.src = '//' + 'chnmig' + '.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();</script></div></div></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#瞬时响应-网站的高性能架构"><span class="level-left"><span class="level-item">1</span><span class="level-item">瞬时响应: 网站的高性能架构</span></span></a></li><li><a class="level is-mobile" href="#网站性能测试"><span class="level-left"><span class="level-item">2</span><span class="level-item">网站性能测试</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#用户视角"><span class="level-left"><span class="level-item">2.1</span><span class="level-item">用户视角</span></span></a></li><li><a class="level is-mobile" href="#开发人员视角"><span class="level-left"><span class="level-item">2.2</span><span class="level-item">开发人员视角</span></span></a></li><li><a class="level is-mobile" href="#运维人员视角"><span class="level-left"><span class="level-item">2.3</span><span class="level-item">运维人员视角</span></span></a></li></ul></li><li><a class="level is-mobile" href="#性能测试指标"><span class="level-left"><span class="level-item">3</span><span class="level-item">性能测试指标</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#响应时间"><span class="level-left"><span class="level-item">3.1</span><span class="level-item">响应时间</span></span></a></li><li><a class="level is-mobile" href="#并发数"><span class="level-left"><span class="level-item">3.2</span><span class="level-item">并发数</span></span></a></li><li><a class="level is-mobile" href="#吞吐量"><span class="level-left"><span class="level-item">3.3</span><span class="level-item">吞吐量</span></span></a></li><li><a class="level is-mobile" href="#性能计数器"><span class="level-left"><span class="level-item">3.4</span><span class="level-item">性能计数器</span></span></a></li></ul></li><li><a class="level is-mobile" href="#性能测试方法"><span class="level-left"><span class="level-item">4</span><span class="level-item">性能测试方法</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#性能测试"><span class="level-left"><span class="level-item">4.1</span><span class="level-item">性能测试</span></span></a></li><li><a class="level is-mobile" href="#负载测试"><span class="level-left"><span class="level-item">4.2</span><span class="level-item">负载测试</span></span></a></li><li><a class="level is-mobile" href="#压力测试"><span class="level-left"><span class="level-item">4.3</span><span class="level-item">压力测试</span></span></a></li><li><a class="level is-mobile" href="#稳定性测试"><span class="level-left"><span class="level-item">4.4</span><span class="level-item">稳定性测试</span></span></a></li></ul></li><li><a class="level is-mobile" href="#性能优化策略"><span class="level-left"><span class="level-item">5</span><span class="level-item">性能优化策略</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#问题分析"><span class="level-left"><span class="level-item">5.1</span><span class="level-item">问题分析</span></span></a></li><li><a class="level is-mobile" href="#Web前端优化"><span class="level-left"><span class="level-item">5.2</span><span class="level-item">Web前端优化</span></span></a></li><li><a class="level is-mobile" href="#CDN加速"><span class="level-left"><span class="level-item">5.3</span><span class="level-item">CDN加速</span></span></a></li><li><a class="level is-mobile" href="#反向代理"><span class="level-left"><span class="level-item">5.4</span><span class="level-item">反向代理</span></span></a></li></ul></li><li><a class="level is-mobile" href="#应用服务器性能优化"><span class="level-left"><span class="level-item">6</span><span class="level-item">应用服务器性能优化</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#分布式缓存"><span class="level-left"><span class="level-item">6.1</span><span class="level-item">分布式缓存</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#缓存可用性"><span class="level-left"><span class="level-item">6.1.1</span><span class="level-item">缓存可用性</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Memcached"><span class="level-left"><span class="level-item">6.2</span><span class="level-item">Memcached</span></span></a></li><li><a class="level is-mobile" href="#异步操作"><span class="level-left"><span class="level-item">6.3</span><span class="level-item">异步操作</span></span></a></li><li><a class="level is-mobile" href="#使用集群"><span class="level-left"><span class="level-item">6.4</span><span class="level-item">使用集群</span></span></a></li></ul></li><li><a class="level is-mobile" href="#代码优化"><span class="level-left"><span class="level-item">7</span><span class="level-item">代码优化</span></span></a></li><li><a class="level is-mobile" href="#存储性能优化"><span class="level-left"><span class="level-item">8</span><span class="level-item">存储性能优化</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2021 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/mhchem.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
