@@ -1,7 +1,7 @@
 ---
 title: 为什么gRPC使用HTTP2而不是WebSocket
 date: 2021-09-05            
-updated: 2021-09-05         
+updated: 2021-09-09         
 comments: true              
 toc: true                   
 excerpt: 在跟同事聊天(摸鱼)的时候, 谈到 gRPC 使用 HTTP2 的好处, 然后同事抛出来一个问题, 为什么不使用 websocket , 于是在我查找了相关资料后有了这一篇博客
@@ -106,24 +106,4 @@ stackOverflow有一个提问类似: [http2 - Does HTTP/2 make websockets obsolet
 [Will WebSocket survive HTTP/2? (infoq.com)](https://www.infoq.com/articles/websocket-and-http2-coexist/)
 
 **适合的才是最好的**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
