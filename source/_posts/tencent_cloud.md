@@ -147,7 +147,7 @@ rust不是通过 apt 进行安装, 而是根据 rust 官网的指导
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-令人高兴的是, 这个脚本需要下载的资源在国内也有速度, 大概 300kb 左右
+令人高兴的是, 这个脚本需要下载的资源在国内也有速度, 大概 300kb/s 左右
 
 以后更新 rust 使用命令
 
