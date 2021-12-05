@@ -7,7 +7,146 @@
             s.parentNode.insertBefore(hm, s);
         })();</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script><meta name="generator" content="Hexo 5.4.0">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
-</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 上午12:00:00">2021-09-04</time>发表</span><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 上午12:00:00">2021-09-04</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">24 分钟读完 (大约3663个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Rust程序设计语言(3)</h1><div class="content"><h2 id="函数">函数</h2>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 上午12:00:00">2021-09-04</time>发表</span><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 上午12:00:00">2021-09-04</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">26 分钟读完 (大约3840个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Rust程序设计语言(3)</h1><div class="content"><h2 id="运算符">运算符</h2>
+<blockquote>
+<p>运算符本身与其他语言一样, 本来原版书没写, 但是还是有用的, 这里还是稍微记一下</p>
+</blockquote>
+<p>Rust 语言支持以下四种运算符</p>
+<ul>
+<li>算术运算符</li>
+<li>位运算符</li>
+<li>关系运算符</li>
+<li>逻辑运算符</li>
+</ul>
+<h3 id="算数运算符">算数运算符</h3>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>运算符</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>加</td>
+<td>+</td>
+</tr>
+<tr>
+<td>减</td>
+<td>-</td>
+</tr>
+<tr>
+<td>乘</td>
+<td>*</td>
+</tr>
+<tr>
+<td>除</td>
+<td>/</td>
+</tr>
+<tr>
+<td>求余</td>
+<td>%</td>
+</tr>
+</tbody>
+</table>
+<p>Rust 不支持自增(++)和自减(–)</p>
+<h3 id="关系运算符">关系运算符</h3>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>运算符</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>大于</td>
+<td>&gt;</td>
+</tr>
+<tr>
+<td>小于</td>
+<td>&lt;</td>
+</tr>
+<tr>
+<td>大于等于</td>
+<td>&gt;=</td>
+</tr>
+<tr>
+<td>小于等于</td>
+<td>&lt;=</td>
+</tr>
+<tr>
+<td>等于</td>
+<td>==</td>
+</tr>
+<tr>
+<td>不等于</td>
+<td>!=</td>
+</tr>
+</tbody>
+</table>
+<h3 id="逻辑运算符">逻辑运算符</h3>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>运算符</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>逻辑与</td>
+<td>&amp;&amp;</td>
+</tr>
+<tr>
+<td>逻辑或</td>
+<td>||</td>
+</tr>
+<tr>
+<td>逻辑非</td>
+<td>!</td>
+</tr>
+</tbody>
+</table>
+<h3 id="位运算符">位运算符</h3>
+<blockquote>
+<p>位运算符的相关操作逻辑,可自行百度</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>运算符</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>位与</td>
+<td>&amp;</td>
+</tr>
+<tr>
+<td>位或</td>
+<td>|</td>
+</tr>
+<tr>
+<td>异或</td>
+<td>^</td>
+</tr>
+<tr>
+<td>位非</td>
+<td>!</td>
+</tr>
+<tr>
+<td>左移</td>
+<td>&lt;&lt;</td>
+</tr>
+<tr>
+<td>右移</td>
+<td>&gt;&gt;</td>
+</tr>
+</tbody>
+</table>
+<h2 id="函数">函数</h2>
 <p>函数在rust中无处不在, 对于rust程序来讲, <code>main</code>函数是许多程序的入口, 之前我们知道, 建立一个函数的关键字是 <code>fn</code></p>
 <p>rust使用下划线命名法来命名, 这个之前也有提到过</p>
 <p>我们来看下面的程序</p>
@@ -23,7 +162,7 @@
 <p>当某个函数的需要多个参数时, 我们这样写</p>
 <figure class="highlight rust"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() {</span><br><span class="line">    another_function(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">another_function</span></span>(x: <span class="built_in">i32</span>, y: <span class="built_in">i32</span>) {</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"x = {}"</span>, x);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"y is {}"</span>, y);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <h3 id="函数的内容包含了陈述式和表达式">函数的内容包含了陈述式和表达式</h3>
-<p>函数的内容是由一系列的**陈述式(statements)<strong>和在后面的可选的</strong>表达式(expression)**组成的, rust是基于表达式的语言, 下面我们来介绍这两个的区别</p>
+<p>函数的内容是由一系列的 <strong>陈述式(statements)</strong> 和在后面的可选的 <strong>表达式(expression)</strong> 组成的, rust是基于表达式的语言, 下面我们来介绍这两个的区别</p>
 <p>陈述式是一系列动作的指令, <strong>陈述式不回传任何数据</strong></p>
 <p>表达式则是通过逻辑处理来产生结果, 也就是说<strong>表达式返回数据</strong></p>
 <p>比如代码</p>
@@ -130,7 +269,7 @@
             s.src = '//' + 'chnmig' + '.disqus.com/embed.js';
             s.setAttribute('data-timestamp', +new Date());
             (d.head || d.body).appendChild(s);
-        })();</script></div></div></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#函数"><span class="level-left"><span class="level-item">1</span><span class="level-item">函数</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#函数的参数"><span class="level-left"><span class="level-item">1.1</span><span class="level-item">函数的参数</span></span></a></li><li><a class="level is-mobile" href="#函数的内容包含了陈述式和表达式"><span class="level-left"><span class="level-item">1.2</span><span class="level-item">函数的内容包含了陈述式和表达式</span></span></a></li><li><a class="level is-mobile" href="#函数返回值"><span class="level-left"><span class="level-item">1.3</span><span class="level-item">函数返回值</span></span></a></li></ul></li><li><a class="level is-mobile" href="#注释"><span class="level-left"><span class="level-item">2</span><span class="level-item">注释</span></span></a></li><li><a class="level is-mobile" href="#控制流程"><span class="level-left"><span class="level-item">3</span><span class="level-item">控制流程</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#if表达式"><span class="level-left"><span class="level-item">3.1</span><span class="level-item">if表达式</span></span></a></li><li><a class="level is-mobile" href="#使用-else-if-处理多个情况"><span class="level-left"><span class="level-item">3.2</span><span class="level-item">使用 else if 处理多个情况</span></span></a></li><li><a class="level is-mobile" href="#在let中使用if"><span class="level-left"><span class="level-item">3.3</span><span class="level-item">在let中使用if</span></span></a></li></ul></li><li><a class="level is-mobile" href="#循环"><span class="level-left"><span class="level-item">4</span><span class="level-item">循环</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#loop"><span class="level-left"><span class="level-item">4.1</span><span class="level-item">loop</span></span></a></li><li><a class="level is-mobile" href="#从循环返回"><span class="level-left"><span class="level-item">4.2</span><span class="level-item">从循环返回</span></span></a></li><li><a class="level is-mobile" href="#while循环"><span class="level-left"><span class="level-item">4.3</span><span class="level-item">while循环</span></span></a></li><li><a class="level is-mobile" href="#for循环"><span class="level-left"><span class="level-item">4.4</span><span class="level-item">for循环</span></span></a></li></ul></li><li><a class="level is-mobile" href="#练习"><span class="level-left"><span class="level-item">5</span><span class="level-item">练习</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#编写程序实现摄氏度与华氏度之间的转换"><span class="level-left"><span class="level-item">5.1</span><span class="level-item">编写程序实现摄氏度与华氏度之间的转换</span></span></a></li><li><a class="level is-mobile" href="#生成-n-阶斐波那契数列"><span class="level-left"><span class="level-item">5.2</span><span class="level-item">生成 n 阶斐波那契数列</span></span></a></li><li><a class="level is-mobile" href="#打印歌曲-“The-Twelve-Days-of-Christmas”-的歌词-使用循环"><span class="level-left"><span class="level-item">5.3</span><span class="level-item">打印歌曲 “The Twelve Days of Christmas” 的歌词, 使用循环</span></span></a></li></ul></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2021 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+        })();</script></div></div></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#运算符"><span class="level-left"><span class="level-item">1</span><span class="level-item">运算符</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#算数运算符"><span class="level-left"><span class="level-item">1.1</span><span class="level-item">算数运算符</span></span></a></li><li><a class="level is-mobile" href="#关系运算符"><span class="level-left"><span class="level-item">1.2</span><span class="level-item">关系运算符</span></span></a></li><li><a class="level is-mobile" href="#逻辑运算符"><span class="level-left"><span class="level-item">1.3</span><span class="level-item">逻辑运算符</span></span></a></li><li><a class="level is-mobile" href="#位运算符"><span class="level-left"><span class="level-item">1.4</span><span class="level-item">位运算符</span></span></a></li></ul></li><li><a class="level is-mobile" href="#函数"><span class="level-left"><span class="level-item">2</span><span class="level-item">函数</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#函数的参数"><span class="level-left"><span class="level-item">2.1</span><span class="level-item">函数的参数</span></span></a></li><li><a class="level is-mobile" href="#函数的内容包含了陈述式和表达式"><span class="level-left"><span class="level-item">2.2</span><span class="level-item">函数的内容包含了陈述式和表达式</span></span></a></li><li><a class="level is-mobile" href="#函数返回值"><span class="level-left"><span class="level-item">2.3</span><span class="level-item">函数返回值</span></span></a></li></ul></li><li><a class="level is-mobile" href="#注释"><span class="level-left"><span class="level-item">3</span><span class="level-item">注释</span></span></a></li><li><a class="level is-mobile" href="#控制流程"><span class="level-left"><span class="level-item">4</span><span class="level-item">控制流程</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#if表达式"><span class="level-left"><span class="level-item">4.1</span><span class="level-item">if表达式</span></span></a></li><li><a class="level is-mobile" href="#使用-else-if-处理多个情况"><span class="level-left"><span class="level-item">4.2</span><span class="level-item">使用 else if 处理多个情况</span></span></a></li><li><a class="level is-mobile" href="#在let中使用if"><span class="level-left"><span class="level-item">4.3</span><span class="level-item">在let中使用if</span></span></a></li></ul></li><li><a class="level is-mobile" href="#循环"><span class="level-left"><span class="level-item">5</span><span class="level-item">循环</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#loop"><span class="level-left"><span class="level-item">5.1</span><span class="level-item">loop</span></span></a></li><li><a class="level is-mobile" href="#从循环返回"><span class="level-left"><span class="level-item">5.2</span><span class="level-item">从循环返回</span></span></a></li><li><a class="level is-mobile" href="#while循环"><span class="level-left"><span class="level-item">5.3</span><span class="level-item">while循环</span></span></a></li><li><a class="level is-mobile" href="#for循环"><span class="level-left"><span class="level-item">5.4</span><span class="level-item">for循环</span></span></a></li></ul></li><li><a class="level is-mobile" href="#练习"><span class="level-left"><span class="level-item">6</span><span class="level-item">练习</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#编写程序实现摄氏度与华氏度之间的转换"><span class="level-left"><span class="level-item">6.1</span><span class="level-item">编写程序实现摄氏度与华氏度之间的转换</span></span></a></li><li><a class="level is-mobile" href="#生成-n-阶斐波那契数列"><span class="level-left"><span class="level-item">6.2</span><span class="level-item">生成 n 阶斐波那契数列</span></span></a></li><li><a class="level is-mobile" href="#打印歌曲-“The-Twelve-Days-of-Christmas”-的歌词-使用循环"><span class="level-left"><span class="level-item">6.3</span><span class="level-item">打印歌曲 “The Twelve Days of Christmas” 的歌词, 使用循环</span></span></a></li></ul></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2021 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
             article: {
                 highlight: {
                     clipboard: true,
