@@ -1,7 +1,7 @@
 ---
 title: Rust程序设计语言(7)              
 date: 2021-11-26            
-updated: 2021-11-26         
+updated: 2021-11-27         
 comments: true              
 toc: true                   
 excerpt: Rust开发中常见的集合和基本的使用方法
