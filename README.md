@@ -42,6 +42,12 @@ hexo clean && hexo deploy
 
 ## markdownTemplate
 
+### 图片引用
+
+> 图片放置在 images/posts 中
+> 引用时使用相对地址 /images/posts/ 引入
+> 例如 images/posts/1.png 地址为 /images/posts/1.png
+
 ### 配置
 
 ``` markdown
@@ -81,6 +87,29 @@ cover: /images/logo.ico
 thumbnail: /image/logo.ico
 ---
 ```
+
+### tags
+
+``` xml
+Golang
+Python
+Rust
+Linux
+LeetCode
+架构
+好玩的技术
+做好自己
+心理学
+逻辑学
+```
+
+### categories
+
+``` xml
+编程
+人生
+```
+
 
 ## emoji
 
