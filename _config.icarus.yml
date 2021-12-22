@@ -161,10 +161,10 @@ search:
     type: insight
 # Comment plugin configurations
 # https://ppoffice.github.io/hexo-theme-icarus/categories/Plugins/Comment/
-comment:
-    type: disqus
+# comment:
+    # type: disqus
     # Disqus shortname
-    shortname: 'chnmig'
+    # shortname: 'chnmig'
 # # Donate plugin configurations
 # # https://ppoffice.github.io/hexo-theme-icarus/categories/Plugins/Donation/
 # donates:
@@ -401,11 +401,11 @@ plugins:
     #     # Twitter Pixel ID
     #     pixel_id: 
 # CDN provider settings
-# https://ppoffice.github.io/hexo-theme-icarus/Configuration/Theme/speed-up-your-site-with-custom-cdn/
+# http://ppoffice.github.io/hexo-theme-icarus/Configuration/icarus%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97-cdn%E6%8F%90%E4%BE%9B%E5%95%86/
 providers:
     # Name or URL template of the JavaScript and/or stylesheet CDN provider
-    cdn: jsdelivr
+    cdn: loli
     # Name or URL template of the webfont CDN provider
-    fontcdn: google
+    fontcdn: loli
     # Name or URL of the fontawesome icon font CDN provider
-    iconcdn: fontawesome
+    iconcdn: loli
