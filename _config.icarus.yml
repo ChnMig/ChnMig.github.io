@@ -119,6 +119,7 @@ navbar:
 # Page footer configurations
 footer:
     # Links to be shown on the right of the footer section
+    # icon is https://fontawesome.com/v5.15/icons?d=gallery&p=2&m=free
     links:
         Creative Commons:
             icon: fab fa-creative-commons
@@ -126,6 +127,9 @@ footer:
         Attribution 4.0 International:
             icon: fab fa-creative-commons-by
             url: 'https://creativecommons.org/licenses/by/4.0/'
+        Contact me:
+            icon: far fa-envelope
+            url: 'mailto:ChnMig@Outlook.com'
         Download on GitHub:
             icon: fab fa-github
             url: 'https://github.com/ChnMig'
@@ -240,10 +244,13 @@ widgets:
         # URL or path for the follow button
         follow_link: 'https://github.com/ChnMig'
         # # Links to be shown on the bottom of the profile widget
-        # social_links:
-        #     Github:
-        #         icon: fab fa-github
-        #         url: 'https://github.com/ppoffice'
+        social_links:
+            Email:
+                icon: far fa-envelope
+                url: 'mailto:ChnMig@Outlook.com'
+            Github:
+                icon: fab fa-github
+                url: 'https://github.com/ppoffice'
         #     Facebook:
         #         icon: fab fa-facebook
         #         url: 'https://facebook.com'

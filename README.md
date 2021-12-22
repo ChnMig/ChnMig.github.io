@@ -115,3 +115,6 @@ LeetCode
 
 [🎁 Emoji cheat sheet for GitHub, Basecamp, Slack & more (webfx.com)](https://www.webfx.com/tools/emoji-cheat-sheet/)
 
+## icon
+
+[Free Icons | Font Awesome](https://fontawesome.com/v5.15/icons?d=gallery&p=2&m=free)
