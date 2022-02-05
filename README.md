@@ -94,8 +94,11 @@ thumbnail: /image/logo.ico
 Golang
 Python
 Rust
+DB
 Linux
 LeetCode
+源码分析
+常用工具
 架构
 好玩的技术
 做好自己

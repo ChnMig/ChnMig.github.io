@@ -158,12 +158,12 @@ type Context interface {
 
 其中:
 
-- `Deadline方法返回当前的这个 `ctx` 被取消的时间
-- `Done`返回的是一个`channel`
+- `Deadline` 方法返回当前的这个 `ctx` 被取消的时间
+- `Done` 返回的是一个 `channel`
 - `Err` 返回`ctx`结束的原因, 只有确实结束了才会返回非空的值
-  - `ctx`被取消就返回`canceled`错误
-  - `ctx`超时结束则会返回`DeadlineExceeded`错误
-- `value`方法则根据`key`返回`value`, 这个是用来传递数据使用的
+  - `ctx` 被取消就返回 `canceled` 错误
+  - `ctx` 超时结束则会返回 `DeadlineExceeded` 错误
+- `value` 方法则根据 `key` 返回 `value` , 这个是用来传递数据使用的
 
 ## background()和TODO()
 
