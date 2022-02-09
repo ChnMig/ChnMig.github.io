@@ -47,8 +47,14 @@ categories:
 
 [Golang 垃圾回收剖析 | Legendtkl](http://legendtkl.com/2017/04/28/golang-gc/)
 
-- 调用 runtime.GC() 进行主动垃圾回收
+### 什么时候进行垃圾回收
+
+- 调用 runtime.GC() 进行主动垃圾回收(主动)
 - 当堆上的活跃对象大于 4M(默认) 的时候进行 GC
+- 上次 GC 的2分钟后
+- 当前没有开启 GC 的时候
+
+### 标记 GC
 
 go 语言使用的是三色标记法
 
