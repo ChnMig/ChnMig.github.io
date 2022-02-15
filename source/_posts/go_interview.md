@@ -340,6 +340,22 @@ type Interface interface {
 
 快排主要是通过分界, 将列表切分, 然后对切分的子列表再切分, 达到排序的目的
 
+## Defer
+
+defer 主要用于延迟调用, defer 会在函数返回之前执行 defer 注册的函数
+
+defer 的注册顺序和执行顺序是相反的, 也就是**先进后出**
+
+另外, defer 可以与`recover`一起使用, 类似于 python 的`try`, 来捕捉程序的`panic`, 从而防止程序直接退出
+
+``` go
+defer func() {
+  if r := recover(); r != nil {  // 捕捉
+    fmt.Println("Recovered in f", r)
+  }
+}()
+```
+
 
 
 
