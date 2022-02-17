@@ -118,6 +118,42 @@ M 是真正的操作系统线程, 比如说 4 核, 就会有 4 个线程, 但是
 
 P 是联通 G 和 M 的中间层他会去将若干个 goroutine 进行排队和调度, 比如说在某一个 goroutine 进行 I/O 操作时让出资源给另一个 G
 
+## GMP 优势(相比多线程开发)
+
+- goroutine 更加轻量(2kb), 线程1~2M
+- 切换更加的快速, 减少内核切换的资源消耗
+
+## GMP 中 G 的状态
+
+- 空闲(Gidle): 刚新建, 未初始化
+- 等待运行(Grunnable): 在队列中等待运行
+- 运行中(Grunning): 表示操作系统线程 M 正在运行这个 G
+- 系统调用中(Gsyscall): M 正在运行这个 G 发起的系统调用, 此时 M 并不拥有 G
+- 等待中(Gwaiting): G 正在等待某些东西完成, 这时候 G 没有运行也不在运行队列中
+- 已终止(Gdead): G 没有被使用, 可能已经执行完毕
+- 栈复制中(Gcopystack): G正在获取新的栈空间并且把原有数据复制进去(防止 GC 清理)
+
+## GMP 中 M 的状态
+
+- 自旋中: M 正在从运行队列中获取 G
+- 执行 Go 代码中: 正在运行 G
+- 执行原生代码中: 正在运行 G 的 syscall
+- 休眠中: 没有 G 时进行休眠
+
+## GMP 中 P 的状态
+
+- 空闲中: M 没有 G 需要运行时, P 空闲
+- 运行中: M 正在运行 G
+- 系统调用中: G 正在 syscall
+- GC 停止中: GC 导致整个世界停止
+- 终止: 多余的 P 会终止
+
+## GMP 抢占式调度
+
+有一个额外的线程M进行死循环, 去检查 G 的运行时间, 如果超过10ms, 则去抢占这个 G 使用的 P, 交给其他的 G 使用
+
+通知 G 停止使用的是信号协作
+
 ## Go 两个结构体生成的对象能不能相互比较
 
 同一个结构体生成的对象可以相互比较
@@ -356,17 +392,223 @@ defer func() {
 }()
 ```
 
+## goroutine如何阻塞
+
+- `WaitGroup`进行等待
+- 监听`ctx.Done()`管道
+- `for`循环
+- 向一个没有接受者并且缓冲区已满的 chan 发送数据
+- 从一个没有发送者并且缓冲区为空的 chan 读取数据
+
+## goroutine 什么时候发生阻塞
+
+- 等待 channel
+- 发生一次系统调用等待回调结果
+
+## goroutine 阻塞时调度器怎么做
+
+调度器将阻塞的 goroutine 放到一边, 切换到其他 goroutine 继续执行, 直到这个 goroutine 结束阻塞
+
+## channel 自动关闭
+
+在这个 channel 没有goroutine 持有时, 会自动关闭
+
+## goroutine 的最大数量
+
+在1.4版本之后, 一个 goroutine 占用**2kb**的内存大小
+
+## 限制协程数量
+
+使用 channel 来限制协程数量, channel 缓冲区的长度就是协程最大数量
+
+``` go
+var ch chan int
+func test(i int) {
+	fmt.Println(i)
+	time.Sleep(1 * 1e9)
+	<-ch  // goroutine 运行结束后将指标返回
+}
+func main() {
+	ch = make(chan int, 10)  // 最多允许10个 goroutine
+	for i:=0; i<1000; i++ {
+		ch<-i  // 有指标再进行 goroutine 启动, 没有就一直夯住
+		go test(i)
+	}
+}
+```
+
+## new 和 make 区别
+
+**new**
+
+分配内存
+
+new 为新的类型分配内存, 返回对应的指针, 比如创建 对象, struct 等
+
+new 返回的是指针, 不使用指针的时候一般不使用 new
+
+**make**
+
+初始化
+
+返回类型的初始值, 只适用于切片/map/channel
+
+## go 的内存分配
+
+分为3块
+
+- spans: 512MB
+- bitmap: 16GB
+- arena: 512GB
+
+**arena**
+
+堆区, 动态分配的内存在这里, go 把内存分割成每个 8kb 的若干页(page)
+
+**bitmap**
+
+标记 arena 对象的地址, 并有4bit 标志位标识了对象是否包含指针和 GC 标记信息
+
+bitmap 中一个 bytes(8bit) 大小的内存对应 arena 里4个指针大小(32bit)的内存, 
+
+**spans**
+
+span 是 go 内存管理的基本单位, span 有多种规格, 每个规格占用若干个 page, 最大的 span 是32kb, 超过32kb 则是特殊的 class
+
+## 结构体作为参数传入时, 传值还是指针
+
+go 都是值传递, 只是参数可以选值类型还是引用类型
+
+看具体的逻辑, 如果需要修改结构体的值时, 需要传入指针来修改数据
+
+其他时候传值, 因为结构体一般存储在栈上(前提是结构体不是特别大), 栈的代价很小, 而传指针有可能会引发内存逃逸
+
+## go 中使用过线程吗
+
+GMP 模型中 M 为操作系统线程, 由 go 调度, 实际的应用开发中没有直接使用过
+
+## linux 有几种线程模型
+
+- 一对一(M:1)
+- 多对一(1:1)
+- 多对多(M:N)
+
+## go 线程中某一个发生了 OOM(内存泄露) 会怎样
+
+kill 掉这个线程, 不影响其他线程
+
+## goroutine 发生 OOM 什么情况
+
+没遇到过, 本地写代码发生过内存逃逸, 发现是 slice 的坑
+
+## OOM 排查
+
+个人经验是 OOM 基本都是 giroutine 泄露, 使用 pprof 定位问题然后排查
+
+## 错误处理怎么做
+
+不是特别简单的逻辑, 牵扯到调用其他服务的函数, 一定有 error 返回值
+
+外面通过判断 `err!=nil` 进行错误捕捉, 通过`fmt.Errorf("test")`进行 error 创建
+
+## goroutine 发生 panic 会怎样
+
+如果没有设置`recover`捕捉, 会导致整个程序崩溃
+
+goroutine 是互相独立的, `recover`必须在本层, 否则无法捕捉 panic
+
+## 怎么管理的 proto 文件
+
+单独的仓库存放, 通过 git 管理
+
+## gin 框架使用参数校验
+
+gin 内置了 [go-playground/validator: :100:Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving (github.com)](https://github.com/go-playground/validator) 插件, 先定义校验的结构体, 通过`tag`的方式指定字段名字, 是否必填等信息, 通过 `c.ShouldBind`来进行参数的校验
+
+## gin 的中间件
+
+经常使用自己写的同意跨域中间件
+
+`gin.Default()`默认带两个中间件, 一个是打印日志, 一个是捕捉 panic 处理成500错误
+
+使用`router.Use()`添加自定义中间件
+
+## gin 跨域中间件
+
+跨域主要是浏览器从服务端返回的 Header 中获取指定的 key, 来判断是否是跨域的
+
+浏览器将请求分为两种:
+
+**简单请求**
+
+1. 使用 `GET、POST、HEAD` 其中一种请求方法。
+2. HTTP的头信息不超出以下几种字段：
+   - Accept
+   - Accept-Language
+   - Content-Language
+   - Last-Event-ID
+   - Content-Type：只限于三个值 `application/x-www-form-urlencoded、multipart/form-data、text/plain`
+
+简单请求的同意跨域, 直接在返回值的 header 中插入`Access-Control-Allow-Origin: *`即可
+
+**非简单请求**
+
+请求方法是 `put` 或 `delete`, 或者 `content-type` 的类型是 `application/json`
+
+其实简单请求之外的都是非简单请求了
+
+浏览器在处理非简单请求时, 会先发送`OPTIONS`方法, 查看返回值的 header 字段, 符合要求则同意跨域
 
 
 
+gin 使用中间件时, 使用`c.Header`添加`Header`数据, 使用`c.Next()`将请求处理移交到下一部分
 
+## go 怎么解析 tag
 
+使用反射进行 tag 的解析
 
+## 反射原理
 
+go 的`reflect`包提供了反射的支持
 
+获取对象的 type 和 value 的元数据和一些方法, 进行调用
 
+**反射一般不使用**
 
+- 可读性差
+- 可能会 panic
+- 影响效率
 
+## channel的坑
+
+- 向一个已经 close 的 chan 写入数据会 panic
+- 从一个已经 close 的 chan 读取数据会 panic
+- 推荐使用`for i := range chan`或者`select`来读取 chan 数据, 这样在关闭后自动退出
+- 有可能造成 goroutine 阻塞
+
+## 负载均衡算法
+
+**哈希**
+
+根据 hash 取模进行分配, 保证同一个 key 会分配到同一个节点
+
+可能会导致不均衡
+
+**轮询**
+
+所有节点进行轮询, 排序选择分配的节点
+
+请求均衡, 但是负载不一定
+
+**随机**
+
+随机选一个节点
+
+类似轮询
+
+**加权轮询**
+
+根据权重优先分配给权重高的节点
 
 
 
