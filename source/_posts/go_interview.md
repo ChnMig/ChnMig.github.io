@@ -610,7 +610,11 @@ go 的`reflect`包提供了反射的支持
 
 根据权重优先分配给权重高的节点
 
+## select 执行原理
 
+具体的代码在`selectgo`中
+
+先将 case 打乱顺序, 然后尝试从 chan 获取值, 没有则运行 default, 没有定义 default 时将所在的 G 加入到对应的 N 个 chan 监听队列中等待唤醒
 
 
 
