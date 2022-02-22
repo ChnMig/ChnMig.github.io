@@ -53,6 +53,8 @@ categories:
 
 是随机的
 
+在 select 的执行函数`selectgo`中, 会先将 case 的顺序打乱
+
 据说是为了保持均衡, 不出现比如总是命中第一个 case, 导致其他下面的 case 完全不执行的情况, 尤其是 select 还通常用来监听多个 channel
 
 ## Go 语言的垃圾回收
@@ -404,6 +406,7 @@ defer func() {
 
 - 等待 channel
 - 发生一次系统调用等待回调结果
+- ...
 
 ## goroutine 阻塞时调度器怎么做
 
@@ -582,7 +585,7 @@ go 的`reflect`包提供了反射的支持
 ## channel的坑
 
 - 向一个已经 close 的 chan 写入数据会 panic
-- 从一个已经 close 的 chan 读取数据会 panic
+- 从一个已经 close 的 chan 读取数据会获取到 chan 数据类型的默认值
 - 推荐使用`for i := range chan`或者`select`来读取 chan 数据, 这样在关闭后自动退出
 - 有可能造成 goroutine 阻塞
 
