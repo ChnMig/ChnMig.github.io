@@ -7,7 +7,7 @@ toc: true
 excerpt:  sync.waitGroup 主要解决了并发-等待问题, 本篇来分析 waitGroup 的原理
 tags:                       
 - Golang
-- 源码
+- 源码分析
 categories:                 
 - 编程
 ---

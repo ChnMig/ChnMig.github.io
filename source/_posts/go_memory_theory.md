@@ -7,7 +7,7 @@ toc: true
 excerpt: golang 如何分配内存?
 tags:                       
 - Golang
-- 源码
+- 源码分析
 categories:                 
 - 编程
 ---

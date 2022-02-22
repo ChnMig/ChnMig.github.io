@@ -7,7 +7,7 @@ toc: true
 excerpt:  sync.map 是为了并发安全的而存在的, 那么是怎么做到的呢?
 tags:                       
 - Golang
-- 源码
+- 源码分析
 categories:                 
 - 编程
 ---
