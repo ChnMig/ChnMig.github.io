@@ -110,4 +110,3 @@ channel 内部实际上有一个互斥锁来保证同时仅允许被一个 gorou
 
 关闭 channel 会把`recvq`中的 goroutine 全部唤醒, 然后将里面存储的数据设置为 nil. 然后将`senq`中的 goroutine 全部唤醒, 但是这些 goroutine 会导致 panic, 所以必须要确保这个 channel 在写入时都是开启的状态
 
-

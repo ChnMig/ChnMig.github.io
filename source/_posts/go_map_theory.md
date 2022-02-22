@@ -62,12 +62,12 @@ key0, key1, key2, value0, value1, value2
 也就是说, `hmap`的结构应该是
 
 ``` bash
-																	hmap
-																	
-bmap0															bmap1																bmap2
-|																	|																		|
-bmap3															bmap4																bmap5
-|																	|																		|
+		       hmap
+														
+bmap0  bmap1  bmap2
+|      |      |
+bmap3  bmap4  bmap5
+|      |      |
 ```
 
 这种关系(我真是灵魂画手:kissing_heart:)

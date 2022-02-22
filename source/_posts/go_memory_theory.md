@@ -50,7 +50,7 @@ arena 存放了真正的值, 很多人也把他称之为`heap`, heap 从两个�
 
 spans 可以理解为 heap 的户口信息, 用来管理 heap 区域的数据, spans 存放的是`mspan`指针, 每个 page都属于某个`mspan`
 
-## bitmap
+### bitmap
 
 bitmap存放了 arena 中的对象标记, 比如标记对应的地址中是否存在对象, 是否被 GC 标记
 
@@ -60,9 +60,9 @@ bitmap存放了 arena 中的对象标记, 比如标记对应的地址中是否�
 
 go 内存管理组件有以下几个:
 
-- mspan: 内存管理基本单元
-- mcache: 每个运行时的 goroutine 都会绑定一个 cache, mcache 会分配这个 goroutine 运行时需要的内存空间(mspan)
-- mcentral为所有 mcache 切分好后备的 mspan
+- mspan: 内存管理基本单元, 管理
+- mcache: 缓存, 每个运行时的 goroutine 都会绑定一个 mcache, mcache 会分配这个 goroutine 运行时需要的内存空间(mspan)
+- mcentral: 为所有 mcache 切分好后备的 mspan, 收集给定大小和登记的所有 span
 - mheap代表Go程序持有的所有堆空间。还会管理闲置的span，需要时向操作系统申请新内存
 
 ### mspan
@@ -79,9 +79,9 @@ go 为了解决内存碎片问题. 将内存分为67种, 每种有不同数量�
 
 在 GMP 并发调度模型中, 每个 G 都绑定一个 mcache, 因此不会出现大家一起占用一个内存, 导致需要加锁竞争的情况, 提高速度
 
-## mcentral
+### mcentral
 
-mcentral保存一种特定类型的全局 mspan列表，包括已分配出去的和未分配出去的, 目的是为所有 mcache 提供切分好的 mspan
+mcentral保存一种特定类型的全局 mspan 列表，包括已分配出去的和未分配出去的, 目的是为所有 mcache 提供切分好的 mspan
 
 有67种 mspan, 也就有67种 mcentral
 
