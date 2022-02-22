@@ -7,6 +7,7 @@ toc: true
 excerpt: go 的 select 是怎么运作的? 本篇大致总结
 tags:                       
 - Golang
+- 源码
 categories:                 
 - 编程
 ---
