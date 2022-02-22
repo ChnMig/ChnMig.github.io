@@ -45,7 +45,9 @@ hexo clean && hexo deploy
 ### 图片引用
 
 > 图片放置在 images/posts 中
+> 
 > 引用时使用相对地址 /images/posts/ 引入
+> 
 > 例如 images/posts/1.png 地址为 /images/posts/1.png
 
 ### 配置
