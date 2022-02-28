@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>总结一下 linux 中的线程模型 - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文总结一下 linux 中的几种线程模型"><meta property="og:type" content="blog"><meta property="og:title" content="总结一下 linux 中的线程模型"><meta property="og:url" content="https://www.chnmig.com/2022/02/21/linux_thread_model/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="本文总结一下 linux 中的几种线程模型"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://www.chnmig.com/img/og_image.png"><meta property="article:published_time" content="2022-02-20T16:00:00.000Z"><meta property="article:modified_time" content="2022-02-20T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="Golang"><meta property="article:tag" content="Linux"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.chnmig.com/2022/02/21/linux_thread_model/"},"headline":"总结一下 linux 中的线程模型","image":["https://www.chnmig.com/img/og_image.png"],"datePublished":"2022-02-20T16:00:00.000Z","dateModified":"2022-02-20T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://www.chnmig.com/images/logo.gif"}},"description":"本文总结一下 linux 中的几种线程模型"}</script><link rel="canonical" href="https://www.chnmig.com/2022/02/21/linux_thread_model/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://lib.baomitu.com/font-awesome/5.12.1/css/all.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?5306a4ae74c103fc71e3fb36eb8f9609";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><link rel="stylesheet" href="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/lightgallery/1.10.0/css/lightgallery.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/justifiedGallery/3.8.1/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://lib.baomitu.com/pace/1.2.4/pace.min.js"></script><meta name="generator" content="Hexo 6.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-02-20T16:00:00.000Z" title="2022/2/21 上午12:00:00">2022-02-21</time>发表</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">5 分钟读完 (大约695个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">总结一下 linux 中的线程模型</h1><div class="content"><h2 id="概述-2">概述</h2>
+<p>linux 最开始使用的线程是<code>linuxThreads</code>, 但是<code>linuxThreads</code>不符合<code>POSIX</code>标准, 后来出现了<code>NGPT</code>, 性能更高, 之后又出现了<code>NPTL</code>, 比<code>NGPT</code>更快, 随着时间推移, 就只剩下<code>NPTL</code>了</p>
+<p><code>NPTL</code>&gt;<code>NGPT</code>&gt;<code>linuxThreads</code></p>
+<p>线程的模型分为三种:</p>
+<ul>
+<li>多对一(M:1)的用户级线程模型</li>
+<li>一对一(1:1)的内核级线程模型: 例如<code>linuxThreads</code>和<code>NPTL</code></li>
+<li>多对多(M:N)的两极线程模型: 例如<code>NGPT</code></li>
+</ul>
+<h2 id="多对一">多对一</h2>
+<p>多对一很好理解, 在多对一中, 线程的创建/调度/同步的细节都由进程的用户空间线程库来处理, 也就是说由语言自己来处理.</p>
+<p>用户态线程的很多操作对内核来讲, 都是透明的, 不需要内核来进行接管, 就意味着不需要进行内核态和用户态进行频繁的切换. 导致线程的创建/调度/同步的处理速度非常的快.</p>
+<p>当然也有缺点, 当多线程并发执行时, 其中一个线程执行 IO 操作需要经过内核时, 内核接管了操作出现阻塞, 就导致了用户态的其他线程都会被阻塞. 因为这些线程实际上都是一个内核调度处理. 如果语言不对多核进行优化时, 就会导致只有一个内核处理线程, 也就无法调度到其他的核心, 就变成了<strong>伪线程</strong></p>
+<h2 id="一对一">一对一</h2>
+<p>在一对一模型中, 每个用户线程都对应各自的内核调度实体, 内核对每个线程进行调度, 在阻塞时将可以其他线程调度到其他核心处理.</p>
+<p>线程每次操作都会在用户态和内核态直接进行切换, 消耗一定的资源, 同时, 内核为每个线程都配置一个核心, 导致线程如果很多时, 会影响性能</p>
+<p>在现代硬件上, CPU 一般都是多核, 因此相比多对一来讲, 一对一能更好的使用资源</p>
+<h2 id="多对多">多对多</h2>
+<p>多对多综合力一对一和多对一的优点, 每个线程可以拥有多个调度实体, 也可以多线程对应一个调度实体</p>
+<p>但是多对多的调度需要内核态和用户态一起联动实现, 导致该模型非常复杂</p>
+<h2 id="go">go</h2>
+<p>go 的 GMP 模型, 属于是多对多模型, 默认情况下, 真正的核心实体数量为 CPU 的内核数量, go 的 goroutine 是 go 内部的线程, 对应 GMP 中的 G, GMP 中的 P 会对 G 进行调度, 落到真正的核心实体, 也就是 GMP 中的 M 进行运行</p>
+<p>更多的 go 调度部分逻辑, 查看我的其他相关文章</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>总结一下 linux 中的线程模型</p><p><a href="https://www.chnmig.com/2022/02/21/linux_thread_model/">https://www.chnmig.com/2022/02/21/linux_thread_model/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>ChnMig</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-02-21</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-02-21</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Golang/">Golang</a><a class="link-muted mr-2" rel="tag" href="/tags/Linux/">Linux</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2022/02/22/go_select_theory/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">go select 原理解析</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/02/20/go_memory_theory/"><span class="level-item">Golang 内存分配</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#概述-2"><span class="level-left"><span class="level-item">1</span><span class="level-item">概述</span></span></a></li><li><a class="level is-mobile" href="#多对一"><span class="level-left"><span class="level-item">2</span><span class="level-item">多对一</span></span></a></li><li><a class="level is-mobile" href="#一对一"><span class="level-left"><span class="level-item">3</span><span class="level-item">一对一</span></span></a></li><li><a class="level is-mobile" href="#多对多"><span class="level-left"><span class="level-item">4</span><span class="level-item">多对多</span></span></a></li><li><a class="level is-mobile" href="#go"><span class="level-left"><span class="level-item">5</span><span class="level-item">go</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2022 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Contact me" href="mailto:ChnMig@Outlook.com"><i class="far fa-envelope"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script><script src="https://lib.baomitu.com/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://lib.baomitu.com/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><script src="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://lib.baomitu.com/lightgallery/1.10.0/js/lightgallery.min.js" defer></script><script src="https://lib.baomitu.com/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><link rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.css"><script src="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/auto-render.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://lib.baomitu.com/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

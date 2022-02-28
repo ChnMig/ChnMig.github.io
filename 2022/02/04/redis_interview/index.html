@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Redis 常问知识点(简略) - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="记录一下面试常问的知识点吧"><meta property="og:type" content="blog"><meta property="og:title" content="Redis 常问知识点(简略)"><meta property="og:url" content="https://www.chnmig.com/2022/02/04/redis_interview/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="记录一下面试常问的知识点吧"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://www.chnmig.com/img/og_image.png"><meta property="article:published_time" content="2022-02-03T16:00:00.000Z"><meta property="article:modified_time" content="2022-02-03T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="DB"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.chnmig.com/2022/02/04/redis_interview/"},"headline":"Redis 常问知识点(简略)","image":["https://www.chnmig.com/img/og_image.png"],"datePublished":"2022-02-03T16:00:00.000Z","dateModified":"2022-02-03T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://www.chnmig.com/images/logo.gif"}},"description":"记录一下面试常问的知识点吧"}</script><link rel="canonical" href="https://www.chnmig.com/2022/02/04/redis_interview/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://lib.baomitu.com/font-awesome/5.12.1/css/all.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?5306a4ae74c103fc71e3fb36eb8f9609";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><link rel="stylesheet" href="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/lightgallery/1.10.0/css/lightgallery.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/justifiedGallery/3.8.1/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://lib.baomitu.com/pace/1.2.4/pace.min.js"></script><meta name="generator" content="Hexo 6.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-02-03T16:00:00.000Z" title="2022/2/4 上午12:00:00">2022-02-04</time>发表</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">39 分钟读完 (大约5819个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Redis 常问知识点(简略)</h1><div class="content"><h2 id="redis的数据类型"><code>redis</code>的数据类型</h2>
+<h3 id="字符串-string">字符串(string)</h3>
+<p><code>string</code>是<code>redis</code>最基本的类型, 一个<code>key</code>对应一个<code>value</code>, <code>string</code>可以包含任何数据, 甚至是序列化的对象也可以, 一个<code>value</code>最大容量为512MB</p>
+<h3 id="哈希-Hash">哈希(Hash)</h3>
+<p><code>Hash</code>是一个键值对的集合, 类似于后端语言的字典, 是一个<code>string</code>类型的<code>field</code>和<code>value</code>的映射表, 很适合用来存储对象</p>
+<h3 id="列表-List">列表(List)</h3>
+<p><code>list</code>是一个简单的字符串列表, 里面的元素是有序的, 在添加新元素的时候可以选择添加到列表的头部或尾部, 每个列表的数据长度最多为40多亿</p>
+<h3 id="集合-Set">集合(Set)</h3>
+<p><code>Set</code>是<code>string</code>类型的<strong>无序</strong>集合, 一个<code>key</code>对应多个<code>string</code>的<code>value</code>, 因为是通过哈希表实现的, 所以对集合的操作, 复杂度都是<code>O(1)</code></p>
+<h3 id="有序集合-ZSet">有序集合(ZSet)</h3>
+<p>与普通的<code>Set</code>不同的是, <code>ZSet</code>的<code>value</code>是有序的. 在<code>ZSet</code>中, <code>value</code>还有一个<code>score</code>字段, 排序时按照<code>score</code>从小到大排序</p>
+<h2 id="Redis的过期失效机制"><code>Redis</code>的过期失效机制</h2>
+<p><code>Redis</code>在设置任何数据类型时, 都可以设置过期时间, 为<code>-1</code>是永不过期, 以秒为单位</p>
+<p><code>Redis</code>使用两种策略来删除过期的数据:</p>
+<h3 id="惰性清除">惰性清除</h3>
+<p>在访问<code>key</code>时, 如果<code>key</code>已经过期了, 将<code>key</code>删除</p>
+<h3 id="定时清理">定时清理</h3>
+<p><code>Redis</code>内部存在一个定时任务, 默认 25ms 执行一次. 每次清理都会遍历所有 db, 从每个 db 中随机取20个 <code>key</code>, 如果过期就删除<code>key</code>, 如果其中有5个 key 过期, 就继续对这个 db 剩下的 key 清理, 否则清理下一个 db.</p>
+<h2 id="Redis数据淘汰"><code>Redis</code>数据淘汰</h2>
+<p>如果执行写入命令时, 发现内存不够, 就会按照配置好的淘汰策略清理内存, 淘汰策略分为以下几种:</p>
+<h3 id="noeviction">noeviction</h3>
+<p>不删除, 如果内存不够了, 直接返回写入错误</p>
+<h3 id="allkeys-lru">allkeys-lru</h3>
+<p>在所有<code>key</code>中, 优先删除最少使用(访问)的<code>key</code>(lru 算法)</p>
+<h3 id="allkeys-random">allkeys-random</h3>
+<p>在所有<code>key</code>中, 随机删除一部分<code>key</code></p>
+<h3 id="volatile-lru">volatile-lru</h3>
+<p>在所有设置了过期时间的<code>key</code>中, 优先删除最少使用的<code>key</code>(lru 算法)</p>
+<h3 id="volatile-random">volatile-random</h3>
+<p>在所有设置了过期时间的<code>key</code>中, 随机删除一部分<code>key</code></p>
+<h3 id="volatile-ttl">volatile-ttl</h3>
+<p>在所有设置了过期时间的<code>key</code>中, 优先删除剩余时间短的<code>key</code></p>
+<h3 id="volatile-lfu">volatile-lfu</h3>
+<p>在所有设置了过期时间的<code>key</code>中, 优先删除最少使用(访问)的<code>key</code>(lfu 算法)</p>
+<h3 id="allkeys-lfu">allkeys-lfu</h3>
+<p>在所有<code>key</code>中, 优先删除最少使用(访问)的<code>key</code>(lfu 算法)</p>
+<h3 id="lru-算法">lru 算法</h3>
+<p>lru 算法是最开始的淘汰算法, lru 认为, 如果一个数据近期没有访问, 那么之后一段时间也不会访问</p>
+<h3 id="lfu-算法">lfu 算法</h3>
+<p>lfu 算法在<code>Redis4.0</code>之后推出, lfu 认为, 一个数据在一段时间内被访问的次数越多, 之后被访问的概率越大.</p>
+<h2 id="Redis持久化方案"><code>Redis</code>持久化方案</h2>
+<h3 id="RDB"><code>RDB</code></h3>
+<p>把数据按照快照的形式保存在磁盘中, 达到触发条件时, 生成一个快照, 然后替换原有的持久化文件</p>
+<p>每次进行<code>save</code>时, 会阻塞<code>Redis</code>的主线程, 向硬盘中写数据会造成一定的 I/O 压力</p>
+<h3 id="AOF"><code>AOF</code></h3>
+<p>每次有新的数据操作, 就把新的数据持久化</p>
+<p>每次对数据进行操作, 会将操作记录写入到<code>aof_buf</code>缓冲区的末尾, <code>Redis</code>每隔一段时间(默认是1s), 会将<code>aof_buf</code>缓冲区里的数据写入和保存到<code>aof</code>文件中.</p>
+<p>将缓冲区的数据同步到磁盘时会有 I/O 压力, 而且写入的频率比<code>RDB</code>高很多, 同步过程中可能会造成 2s 的阻塞</p>
+<p>防止<code>AOF</code>文件越来越大, 可以执行<code>BGREWRITEAOF</code>命令, 生成新的<code>AOF</code>文件, 新的修改记录会写进新的<code>AOF</code>文件</p>
+<h3 id="两者之间的区别">两者之间的区别</h3>
+<blockquote>
+<p>推荐使用 AOF 作为持久化</p>
+</blockquote>
+<ul>
+<li>aof 比 rdb 更新的频率更高</li>
+<li>aof 比 rdb 更安全, 但是更大</li>
+<li>rdb 的性能比 aof 好</li>
+</ul>
+<h3 id="RDB和AOF混合"><code>RDB</code>和<code>AOF</code>混合</h3>
+<p>4.0新增的混合持久化方式, 在<code>AOF</code>文件中, 前半段是<code>RDB</code>格式, 后半段是<code>AOF</code>格式</p>
+<p>结合了<code>RDB</code>和<code>AOF</code>的优点, 速度更快, 同时增量更新的数据通过<code>AOF</code>的方式保存, 减少可能的数据丢失</p>
+<p>但是与4.0之前的版本不兼容, 同时阅读性差</p>
+<h3 id="持久化选择">持久化选择</h3>
+<p>必须要强调的是, 在不需要考虑数据丢失的情况下, 不需要考虑持久化.</p>
+<p>单机情况下, 如果可以接收十几分钟的<code>Redis</code>不可用, 可以直接选择<code>RDB</code>持久化, 对性能的影响更小, 如果对数据丢失的容忍度不高, 只能选择<code>AOF</code></p>
+<p>如果你使用的是多节点部署, 最好还是开启持久化, 防止节点都出现故障时, 重新拉起后没有数据. 多节点可以选择将主节点不开启持久化, 从服务器开启<code>AOF</code>持久化, 并定时备份<code>AOF</code>文件.</p>
+<h2 id="Redis当做缓存系统"><code>Redis</code>当做缓存系统</h2>
+<p><code>Redis</code>常被当做缓存使用, 将一些数据缓存在 Redis 中, 不用每次都访问数据库, 减少压力, 同时<code>Redis</code>自带的数据过期机制, 可以方便的维护缓存</p>
+<h3 id="缓存的常见使用方式">缓存的常见使用方式</h3>
+<blockquote>
+<p>这里跟具体的业务有关</p>
+</blockquote>
+<p><strong>等待缓存自己过期</strong></p>
+<p>在用户请求某个数据时, 优先从<code>Redis</code>中查询是否存在这个数据, 如果存在直接返回, 如果不存在就从数据库中获取数据并录入到<code>Redis</code>中, 当数据库中的数据更新时, 不对<code>redis</code>中的老数据缓存进行处理, 等待缓存自己过期后再从数据库中拉取新的数据</p>
+<p>优点: 不必关注缓存过期策略, 开发成本低, 管理成本低, 出 BUG 概率低</p>
+<p>缺点: 完全依赖过期时间, 时间短容易造成缓存频繁失效, 时间长容易造成数据更新后老的缓存存在时间长</p>
+<p><strong>主动删除缓存</strong></p>
+<p>在用户请求某个数据时, 优先从<code>Redis</code>中查询是否存在这个数据, 如果存在直接返回, 如果不存在就从数据库中获取数据并录入到<code>Redis</code>中, 当数据库中的数据更新时, 删除<code>redis</code>里的缓存数据, 等待下次查询时, 走未命中缓存的流程</p>
+<p>优点: 错误缓存的存在时间短, 只增加了更新数据时的删除缓存逻辑</p>
+<p>缺点: 后端需要同时连接数据库和<code>Redis</code>, 损耗双倍的连接资源</p>
+<p><strong>主动更新缓存</strong></p>
+<p>在用户请求某个数据时, 优先从<code>Redis</code>中查询是否存在这个数据, 如果存在直接返回, 如果不存在就从数据库中获取数据并录入到<code>Redis</code>中, 当数据库中的数据更新时, 主动将<code>Redis</code>中的缓存更新为最新数据, 同时重置过期时间</p>
+<p>为了保证速度和效率, 更新缓存这一步使用消费者来做, 将需要更新的数据推入消息队列, 由消费者来接收处理数据</p>
+<p>优点: 使用消息队列, 降低代码的耦合性, 旧缓存存在时间很短</p>
+<p>缺点: 如果多后端同时修改同一个缓存, 可能因为网络传输问题, 导致先后顺序错误, 未将数据修改为正确的最终结果, 同时引入了消息队列, 增加成本</p>
+<p><strong>订阅日志来修改缓存</strong></p>
+<p>假如数据库是<code>MySQL</code>, 可以通过订阅<code>MySQL</code>的<code>binlog</code>日志, 通过解析日志来获取数据, 同步到缓存中</p>
+<p>优点: 完全解耦, 延迟低, 可靠性强</p>
+<p>缺点: 开发成本高, 同步服务出现问题时<code>Redis</code>的缓存完全不可信</p>
+<blockquote>
+<p>一般的方案一比较适用, 因为其开发快, Bug 少, 适合对缓存延迟没有特别要求的业务</p>
+</blockquote>
+<h3 id="缓存穿透">缓存穿透</h3>
+<p>缓存穿透指的是用户想要获取一个一定不存在的数据, 因为缓存是在没有命中时才写入, 导致不存在的数据每次请求都需要落到数据库中, 如果流量很大有可能拖垮数据库</p>
+<p><strong>解决方法</strong></p>
+<p>如果某个数据查询不到, 比如查询<code>name</code>为<code>s1</code>的信息, 查询不到时, 将查询不到的标识也记录进缓存中, 设置较短的过期时间, 当第二次查询时, 直接命中缓存, 返回不存在</p>
+<h3 id="缓存血崩">缓存血崩</h3>
+<p>缓存血崩指的是在设置缓存是设置了相同的过期时间, 导致缓存在某一时刻全部过期失效, 全部查询进数据库, 导致数据库压力瞬间增大</p>
+<p><strong>解决</strong></p>
+<p>在写入缓存时设置时间段内随机的过期时间, 例如20-30分钟的随机值过期</p>
+<h3 id="缓存击穿">缓存击穿</h3>
+<p>在某个缓存刚好过期的时候, 有大量的请求并行获取这条数据, 因为缓存刚刚失效, 新的缓存还没落入, 导致都访问数据库查询数据, 数据库压力瞬间增大</p>
+<p><strong>解决</strong></p>
+<p>在缓存失效时, 在<code>redis</code>中留下标识位, 标志这个数据正在从数据库获取数据中, 当有新的请求获取这条数据时, 如果找到了这个标识位, 代表有其他的连接正在获取数据, 等待一段时间后直接从<code>redis</code>中重新获取数据, 而不从数据库中获取</p>
+<p>可以使用<code>redis</code>的<code>SETNX</code>来插入标识位, <code>SETNX</code>只有<code>key</code>不存在时才创建(返回1), 存在则返回已经存在, 可以使用<code>SETNX</code>来判断当前有没有连接正在更新缓存</p>
+<h3 id="热-key-问题">热 key 问题</h3>
+<p><strong>什么是热 key</strong></p>
+<p>类似于微博热搜榜, 知乎热搜榜这些, 访问频率很高的 key 就成为热点 key, 当请求热点 key 时, 由于请求量很大, 可能会导致缓存服务宕机</p>
+<p><strong>危害</strong></p>
+<p>热 key 会让流量集中, 如果达到了硬件上限, 比如网卡满了, 会导致其他 key 访问出现堵塞, 甚至有可能直接将缓存服务或者这个节点失效, 如果是分片存储缓存, 则可能导致整个片缓存丢失, 其他片没有此数据, 同样的也可能导致缓存击穿, 引起业务崩溃</p>
+<p><strong>如何找到热 key</strong></p>
+<ul>
+<li>根据业务判断, 比如 热搜榜/ 推荐商品/ 热评 等在设计时就应该考虑到可能出现热 key 问题</li>
+<li>客户端进行埋点收集统计后上报</li>
+<li>服务有代理层的话可以在代理层进行收集和分析</li>
+</ul>
+<p><strong>如何解决</strong></p>
+<ul>
+<li>如果是分片, 增加分片副本, 分担读取流量</li>
+<li>对热 key 进行备份, 读取时随机访问其中的一个副本</li>
+<li>在客户端使用本地缓存, 只在本地缓存过期或者不存在或者用户主动点击刷新才请求缓存服务器</li>
+</ul>
+<h3 id="为什么不使用Memcached作为缓存框架">为什么不使用<code>Memcached</code>作为缓存框架</h3>
+<ul>
+<li><code>Memcached</code>又大又重, 没有特别必要不使用</li>
+<li><code>Redis</code>速度更快</li>
+</ul>
+<h3 id="为什么不使用语言自带的数据结构作为缓存">为什么不使用语言自带的数据结构作为缓存</h3>
+<ul>
+<li>多个后端无法进行数据共享</li>
+<li>申请的内存有限</li>
+<li>无法持久化</li>
+<li>无法分布式</li>
+<li>无法单独部署</li>
+</ul>
+<h3 id="缓存预热">缓存预热</h3>
+<p>在系统启动时, 将常用的数据主动写入到缓存中, 避免第一次请求时从数据库获取</p>
+<p><strong>方式</strong></p>
+<ul>
+<li>数据量不大时在工程启动时进行加载缓存</li>
+<li>数据量大时, 通过执行定时脚本进行缓存刷新</li>
+<li>数据量特大时, 优先保证热 key 加载到缓存</li>
+</ul>
+<h3 id="缓存降级">缓存降级</h3>
+<p>指的是在缓存失效或者缓存服务器直接挂掉的时候, 不去访问数据库, 直接返回默认数据. 降级服务一般是有损的, 使用时代表着问题出现了</p>
+<h2 id="RESP">RESP</h2>
+<p><code>RESP</code>是 <code>Redis</code>的序列化协议, 仅用作<code>Redis</code>的客户端与服务端进行通讯</p>
+<p><code>RESP</code>的优点是: 实现简单, 解析快速, 可读性强</p>
+<p><code>RESP</code>可以序列化不同的数据类型, 比如: 整形, 字符串, 数组等等, 并且专门为错误提供了类型</p>
+<p><code>RESP</code>是二进制安全协议, 在处理批量数据时, 也不用逐条单独的进行处理, 在批量传输数据时, 有参数标识了数据长度</p>
+<p><code>RESP</code>支持五中数据类型:</p>
+<ul>
+<li>字符串: 以<code>+</code>开头</li>
+<li>错误: 以<code>-</code>开头</li>
+<li>整形: 以<code>:</code>开头</li>
+<li>批量字符串: 以<code>$</code>开头</li>
+<li>数组: 以<code>*</code>开头</li>
+</ul>
+<h2 id="架构模式">架构模式</h2>
+<h3 id="单机">单机</h3>
+<blockquote>
+<p>单机部署在单个机器上</p>
+</blockquote>
+<p>优点: 方便快速简单省资源</p>
+<p>缺点: 内存容量和处理能力有限, 没办法高可用</p>
+<h3 id="主从复制-2">主从复制</h3>
+<blockquote>
+<p>使用自带的主从复制功能, 将某个节点设置为主, 其他为从, <code>redis</code>将主中的数据复制到若干从节点中, 每次更新也是, 前提是能够连接</p>
+</blockquote>
+<p>优点: 读(从)写(主)分离, 分散<code>Redis</code>压力</p>
+<p>缺点: 无法保证高可用, 写数据的压力依旧全在主节点</p>
+<h3 id="哨兵">哨兵</h3>
+<p><a target="_blank" rel="noopener" href="https://redis.io/topics/sentinel">Redis Sentinel Documentation – Redis</a></p>
+<blockquote>
+<p>哨兵模式也是主从模式, 只是有至少三个哨兵节点, 会不断的检查各个节点是否在正常运转, 当节点错误时, 如果是从节点则自动剔除, 主节点则进行故障转移, 如果是主节点下线, 则从剩下的从节点中选取一个节点成为主节点, 同时还会向指定的 API 向其他程序发送错误通知</p>
+</blockquote>
+<p>优点: 高可用, 自动监控各个节点并进行故障转移</p>
+<p>缺点: 主从模式, 当主节点出现问题时, 故障转移需要一定时间, 还有可能会丢弃数据, 而且没有解决主节点的压力</p>
+<h3 id="集群">集群</h3>
+<blockquote>
+<p><code>Redis-cluster</code>无中心结构, 其中的节点与其他节点数据共享, 每个节点都保存了数据和整个集群的状态, 每个节点都和其他节点连接</p>
+</blockquote>
+<p>优点: 无中心结构, 节点间数据共享, 可动态新增和删除节点, 其中一个节点下线不影响其他节点</p>
+<p>缺点: 数据隔离性差, 容易相互影响, 数据通过异步进行复制, 不保证数据强一致性</p>
+<h2 id="CAP">CAP</h2>
+<h3 id="C-一致性">C(一致性)</h3>
+<p>分布式系统中的所有数据, 在某一时刻是否等同于同样的值</p>
+<h3 id="A-可用性">A(可用性)</h3>
+<p>一部分节点故障后, 集群整体是否还能响应客户端的读写请求</p>
+<h3 id="P-分区容错性">P(分区容错性)</h3>
+<p>如果系统不能在指定的时限内达到数据的一致性, 就意味着发生了分区的问题, 此时需要在一致性和可用性之间做出选择</p>
+<h2 id="悲观锁和乐观锁">悲观锁和乐观锁</h2>
+<h3 id="悲观锁">悲观锁</h3>
+<p>获取数据时都认为别人会修改这个数据, 所以在每次拿到数据的时候都会上锁, 别人拿到锁之前无法拿到数据</p>
+<h3 id="乐观锁">乐观锁</h3>
+<p>获取数据时都认为别人不会修改这个数据, 不会上锁, 但是在数据更新之前, 去数据库中查看别人有没有更新这个数据, 可以使用版本号来做, 比如<code>Redis</code>中的<code>INCR</code>命令</p>
+<h3 id="两种锁的选型">两种锁的选型</h3>
+<p>不能说哪个锁是绝对好的, 两者之间各有优缺, 具体还是需要看业务:</p>
+<p>乐观锁适用于写很少的情况下, 冲突真的很少发送时, 不加锁可以省去加锁解锁的时间, 提高效率</p>
+<p>当你在设计的过程中, 就意识到可能会发生数据的冲突, 那么就需要使用悲观锁来保证数据的正确性</p>
+<h2 id="为什么Redis是单线程">为什么<code>Redis</code>是单线程</h2>
+<blockquote>
+<p><code>Redis</code>6.0修改为多线程处理, 之前都是单线程</p>
+<p><code>Redis</code>6.0也只是处理网络数据和协议解析使用了多线程, 执行命令依旧是单线程</p>
+</blockquote>
+<p><code>Redis</code>是基于内存的操作, 因此<code>CPU</code>不是瓶颈, 其瓶颈更多是内存大小和网络带宽, 而使用多线程会提高<code>Redis</code>开发难度, 可能带来更多 BUG</p>
+<p><code>Redis</code>6.0将网络数据处理修改为了多线程, 提高了网络处理的效率, 充分利用 CPU 资源, 分摊 I/O 任务, 效率基本上翻倍</p>
+<p><strong>优点</strong></p>
+<p>使用单线程编写<code>Redis</code>, 会使得代码变得清晰, 减少 BUG, 提高可读性, 也无需考虑数据的加锁问题, 提高性能, 也不存在线程或者进程切换带来的性能损耗</p>
+<p><strong>缺点</strong></p>
+<p>无法充分的发挥多核机器的优势</p>
+<h2 id="Redis为什么快"><code>Redis</code>为什么快</h2>
+<ul>
+<li>完全基于内存, 数据全部存储在内存中(不开启持久化), 没有磁盘 I/O</li>
+<li>单线程模型, 没有上下文切换的开销, 不用加锁, 没有性能消耗</li>
+</ul>
+<h2 id="Redis主从同步实现"><code>Redis</code>主从同步实现</h2>
+<h3 id="新节点">新节点</h3>
+<p>当一个新节点上线后, 如果是从节点, 会从主节点拉取全量数据, 进行全量同步</p>
+<h3 id="旧节点上线">旧节点上线</h3>
+<p>节点将之前的最后一次同步的 id 和偏移量发送到主节点, 主节点进判断并将需要同步的数据推送到节点中</p>
+<ul>
+<li>如果 id 与当前主节点最新的 id 不一致, 就会进行全量同步</li>
+<li>如果 id 与当前主节点最新的 id 一致, 就会进行部分同步</li>
+</ul>
+<h3 id="全量同步">全量同步</h3>
+<p>主节点重新生成一个<code>RDB</code>数据快照文件, 发送给节点, 节点解析<code>RDB</code>文件, 并将数据载入到节点中, 同时, 在同步过程中, 如果有新的操作, 也会由主节点记录后发送给节点</p>
+<h3 id="部分同步">部分同步</h3>
+<p>根据偏移量, 主节点获取最后几次操作日志, 发送给节点</p>
+<h3 id="命令传播">命令传播</h3>
+<p>在同步完成后, 就进入到了命令传播阶段. 当主节点有新的数据修改时, 异步的发送给其他节点</p>
+<h2 id="哨兵的实现故障转移">哨兵的实现故障转移</h2>
+<h3 id="检测节点下线">检测节点下线</h3>
+<p>每隔一段时间(默认2s), 哨兵节点会给主节点发送<code>PING</code>命令, 如果一段时间内没有收到回复, 哨兵就认为主节点客观下线</p>
+<p>然后, 哨兵节点会向其他哨兵节点发送命令, 获取其他哨兵内这个节点的状态, 当其他哨兵也认为该节点下线到达一定数量后, 就确认确实客观下线了</p>
+<h3 id="哨兵选举">哨兵选举</h3>
+<p>主节点客观下线后, 多个哨兵之间互相通信, 选举出一个领导者哨兵, 这个领导者哨兵对主节点进行故障转移</p>
+<p>选举使用<code>Raft</code>算法, 就是最先检测到主节点下线的哨兵节点, 向其他哨兵节点发送申请成为领导者的命令, 如果其他哨兵没有同意过其他哨兵的申请, 就同意本次申请, 当同意的票数过半, 就成为领导者哨兵, 否则由另外的哨兵节点重新申请, 一般情况下, 第一次选举就会成功, 变成领导者</p>
+<h3 id="故障转移">故障转移</h3>
+<p>领导者哨兵从节点中按照规则选出一个节点作为主节点, 筛选的规则是:</p>
+<ul>
+<li>排除不健康的节点(下线的/断线的/最近5s 内没有回复哨兵<code>INFO</code>命令的/与旧的主节点断开时间长的)</li>
+<li>根据优先级, 复制偏移量, 来选择一个从节点为主节点</li>
+</ul>
+<p>然后向这个从节点发送升级命令, 让从节点变成主节点, 老的主节点更新为新的主节点的从节点</p>
+<h2 id="Redis的常用使用场景"><code>Redis</code>的常用使用场景</h2>
+<ul>
+<li>缓存系统, 存储数据</li>
+<li>排行榜系统, 使用有序集合</li>
+<li>计数器系统, 比如 浏览量, 播放量, 在线人数</li>
+<li>分布式锁, 多个后端使用同一个资源时, 加锁防止竞争</li>
+<li>消息系统, 消息队列也提供了<code>Redis</code>作为中间件使用</li>
+</ul>
+<h2 id="Lua在Redis中的使用"><code>Lua</code>在<code>Redis</code>中的使用</h2>
+<h3 id="什么是Lua">什么是<code>Lua</code></h3>
+<p><a target="_blank" rel="noopener" href="https://www.lua.org/">The Programming Language Lua</a></p>
+<p><code>Lua</code>是个脚本语言, 使用<code>C</code>语言编写, 目的是为了嵌入各种应用程序中, 为应用程序提供灵活的扩展定制功能</p>
+<h3 id="为什么使用Lua">为什么使用<code>Lua</code></h3>
+<ul>
+<li>减少网络开销: 对于客户端来讲, 可以将多个操作放置进一个脚本中执行, 只需要一次网络通信</li>
+<li>原子操作: 脚本中通常有多步操作, <code>Redis</code>会将脚本作为一个整体执行, 中间不会插入其他命令, 避免资源竞争</li>
+<li>可复用: 脚本可永远存在<code>Redis</code>中, 其他不同语言的客户端都可以复用这个脚本</li>
+<li>方便: <code>Redis</code>的<code>2.6</code>之后就默认集成了<code>lua</code>环境, 无需引入插件或者修改配置文件等方式开启</li>
+</ul>
+<h3 id="lua的普遍用法"><code>lua</code>的普遍用法</h3>
+<ol>
+<li>将脚本写进<code>xx.lua</code>中, 或者以变量的方式写在代码中</li>
+<li>使用<code>SCRIPT LOAD</code>将脚本 load 进脚本缓存中, <code>Redis</code>返回这个脚本的<code>sha1</code>校验和</li>
+<li>使用<code>EVALSHA sha1 numkeys key [key ...] arg [arg ...]</code> 调用函数</li>
+</ol>
+<h3 id="lua的参数"><code>lua</code>的参数</h3>
+<p><code>lua</code>可以通过传参的方式来进行变量的输入,<code>EVALSHA sha1 numkeys key [key ...] arg [arg ...] </code>分为几部分:</p>
+<p><code>sha1</code>字段为load 时返回的校验和</p>
+<p><code>numkeys</code>指<code>key</code>的数量, 比如<code>EVALSHA 5332031c6b470dc5a0dd9b4bf2030dea6d65de91  1 test  500 100</code> , 此时<code>key</code>有1个为<code>test</code>, <code>arg</code>有两个为<code>500</code> 和<code>100</code></p>
+<p>在脚本中, 通过 <code>KEYS[1]</code>, <code>KEYS[2]</code>等等来按位置获取参数<code>key</code>, 通过<code>ARGV[1]</code>, <code>ARGV[2]</code>等等来按位置获取参数<code>arg</code></p>
+<h3 id="哨兵模式中lua的执行逻辑">哨兵模式中<code>lua</code>的执行逻辑</h3>
+<ol>
+<li>在 load 脚本时, 会将脚本存储在每个节点</li>
+<li>在调用脚本时, 会调用当前节点的脚本</li>
+</ol>
+<p><code>redis</code>规定, 在运行<code>lua</code>脚本时, 必须不能在代码中含有随机性质的代码, 例如生成随机数, 目的是防止在节点 a 执行脚本结果与节点 b 执行结果不一致</p>
+<h2 id="分布式锁">分布式锁</h2>
+<blockquote>
+<p>lua 脚本保证原子性</p>
+</blockquote>
+<h3 id="要点">要点</h3>
+<ul>
+<li>使用 lua 脚本来完成加解锁步骤, 目的是 lua 脚本运行是原子性的, 防止资源竞争</li>
+<li>value 随机生成, 目的是防止 key 过期时间设置的不合理, 在第一个锁加上后, 未主动解锁前,  key 过期, 此时第二个线程请求加锁, 查证没有 key, 则正常加锁, 而第一个线程结束后进行解锁, 如果没有唯一标识进行判断, 就会将线程2的锁解除</li>
+</ul>
+<p><strong>加锁</strong></p>
+<ol>
+<li>使用<code>setnx</code>, 如果 key 存在则不做任何动作, key 不存在插入 value</li>
+<li>key 不存在时需要继续给这个 key 设置超时时间</li>
+<li>value 要求随机生成</li>
+</ol>
+<p><strong>解锁</strong></p>
+<ol>
+<li>获取 key 的 value</li>
+<li>value 一致则删除</li>
+<li>不一致代表已经被占用, 此时直接退出</li>
+</ol>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Redis 常问知识点(简略)</p><p><a href="https://www.chnmig.com/2022/02/04/redis_interview/">https://www.chnmig.com/2022/02/04/redis_interview/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>ChnMig</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-02-04</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-02-04</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/DB/">DB</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2022/02/10/go_map_theory/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Golang map 的底层原理</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/01/21/mysql_interview/"><span class="level-item">MySQL 常问知识点(简略)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#redis的数据类型"><span class="level-left"><span class="level-item">1</span><span class="level-item">redis的数据类型</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#字符串-string"><span class="level-left"><span class="level-item">1.1</span><span class="level-item">字符串(string)</span></span></a></li><li><a class="level is-mobile" href="#哈希-Hash"><span class="level-left"><span class="level-item">1.2</span><span class="level-item">哈希(Hash)</span></span></a></li><li><a class="level is-mobile" href="#列表-List"><span class="level-left"><span class="level-item">1.3</span><span class="level-item">列表(List)</span></span></a></li><li><a class="level is-mobile" href="#集合-Set"><span class="level-left"><span class="level-item">1.4</span><span class="level-item">集合(Set)</span></span></a></li><li><a class="level is-mobile" href="#有序集合-ZSet"><span class="level-left"><span class="level-item">1.5</span><span class="level-item">有序集合(ZSet)</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Redis的过期失效机制"><span class="level-left"><span class="level-item">2</span><span class="level-item">Redis的过期失效机制</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#惰性清除"><span class="level-left"><span class="level-item">2.1</span><span class="level-item">惰性清除</span></span></a></li><li><a class="level is-mobile" href="#定时清理"><span class="level-left"><span class="level-item">2.2</span><span class="level-item">定时清理</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Redis数据淘汰"><span class="level-left"><span class="level-item">3</span><span class="level-item">Redis数据淘汰</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#noeviction"><span class="level-left"><span class="level-item">3.1</span><span class="level-item">noeviction</span></span></a></li><li><a class="level is-mobile" href="#allkeys-lru"><span class="level-left"><span class="level-item">3.2</span><span class="level-item">allkeys-lru</span></span></a></li><li><a class="level is-mobile" href="#allkeys-random"><span class="level-left"><span class="level-item">3.3</span><span class="level-item">allkeys-random</span></span></a></li><li><a class="level is-mobile" href="#volatile-lru"><span class="level-left"><span class="level-item">3.4</span><span class="level-item">volatile-lru</span></span></a></li><li><a class="level is-mobile" href="#volatile-random"><span class="level-left"><span class="level-item">3.5</span><span class="level-item">volatile-random</span></span></a></li><li><a class="level is-mobile" href="#volatile-ttl"><span class="level-left"><span class="level-item">3.6</span><span class="level-item">volatile-ttl</span></span></a></li><li><a class="level is-mobile" href="#volatile-lfu"><span class="level-left"><span class="level-item">3.7</span><span class="level-item">volatile-lfu</span></span></a></li><li><a class="level is-mobile" href="#allkeys-lfu"><span class="level-left"><span class="level-item">3.8</span><span class="level-item">allkeys-lfu</span></span></a></li><li><a class="level is-mobile" href="#lru-算法"><span class="level-left"><span class="level-item">3.9</span><span class="level-item">lru 算法</span></span></a></li><li><a class="level is-mobile" href="#lfu-算法"><span class="level-left"><span class="level-item">3.10</span><span class="level-item">lfu 算法</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Redis持久化方案"><span class="level-left"><span class="level-item">4</span><span class="level-item">Redis持久化方案</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#RDB"><span class="level-left"><span class="level-item">4.1</span><span class="level-item">RDB</span></span></a></li><li><a class="level is-mobile" href="#AOF"><span class="level-left"><span class="level-item">4.2</span><span class="level-item">AOF</span></span></a></li><li><a class="level is-mobile" href="#两者之间的区别"><span class="level-left"><span class="level-item">4.3</span><span class="level-item">两者之间的区别</span></span></a></li><li><a class="level is-mobile" href="#RDB和AOF混合"><span class="level-left"><span class="level-item">4.4</span><span class="level-item">RDB和AOF混合</span></span></a></li><li><a class="level is-mobile" href="#持久化选择"><span class="level-left"><span class="level-item">4.5</span><span class="level-item">持久化选择</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Redis当做缓存系统"><span class="level-left"><span class="level-item">5</span><span class="level-item">Redis当做缓存系统</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#缓存的常见使用方式"><span class="level-left"><span class="level-item">5.1</span><span class="level-item">缓存的常见使用方式</span></span></a></li><li><a class="level is-mobile" href="#缓存穿透"><span class="level-left"><span class="level-item">5.2</span><span class="level-item">缓存穿透</span></span></a></li><li><a class="level is-mobile" href="#缓存血崩"><span class="level-left"><span class="level-item">5.3</span><span class="level-item">缓存血崩</span></span></a></li><li><a class="level is-mobile" href="#缓存击穿"><span class="level-left"><span class="level-item">5.4</span><span class="level-item">缓存击穿</span></span></a></li><li><a class="level is-mobile" href="#热-key-问题"><span class="level-left"><span class="level-item">5.5</span><span class="level-item">热 key 问题</span></span></a></li><li><a class="level is-mobile" href="#为什么不使用Memcached作为缓存框架"><span class="level-left"><span class="level-item">5.6</span><span class="level-item">为什么不使用Memcached作为缓存框架</span></span></a></li><li><a class="level is-mobile" href="#为什么不使用语言自带的数据结构作为缓存"><span class="level-left"><span class="level-item">5.7</span><span class="level-item">为什么不使用语言自带的数据结构作为缓存</span></span></a></li><li><a class="level is-mobile" href="#缓存预热"><span class="level-left"><span class="level-item">5.8</span><span class="level-item">缓存预热</span></span></a></li><li><a class="level is-mobile" href="#缓存降级"><span class="level-left"><span class="level-item">5.9</span><span class="level-item">缓存降级</span></span></a></li></ul></li><li><a class="level is-mobile" href="#RESP"><span class="level-left"><span class="level-item">6</span><span class="level-item">RESP</span></span></a></li><li><a class="level is-mobile" href="#架构模式"><span class="level-left"><span class="level-item">7</span><span class="level-item">架构模式</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#单机"><span class="level-left"><span class="level-item">7.1</span><span class="level-item">单机</span></span></a></li><li><a class="level is-mobile" href="#主从复制-2"><span class="level-left"><span class="level-item">7.2</span><span class="level-item">主从复制</span></span></a></li><li><a class="level is-mobile" href="#哨兵"><span class="level-left"><span class="level-item">7.3</span><span class="level-item">哨兵</span></span></a></li><li><a class="level is-mobile" href="#集群"><span class="level-left"><span class="level-item">7.4</span><span class="level-item">集群</span></span></a></li></ul></li><li><a class="level is-mobile" href="#CAP"><span class="level-left"><span class="level-item">8</span><span class="level-item">CAP</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#C-一致性"><span class="level-left"><span class="level-item">8.1</span><span class="level-item">C(一致性)</span></span></a></li><li><a class="level is-mobile" href="#A-可用性"><span class="level-left"><span class="level-item">8.2</span><span class="level-item">A(可用性)</span></span></a></li><li><a class="level is-mobile" href="#P-分区容错性"><span class="level-left"><span class="level-item">8.3</span><span class="level-item">P(分区容错性)</span></span></a></li></ul></li><li><a class="level is-mobile" href="#悲观锁和乐观锁"><span class="level-left"><span class="level-item">9</span><span class="level-item">悲观锁和乐观锁</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#悲观锁"><span class="level-left"><span class="level-item">9.1</span><span class="level-item">悲观锁</span></span></a></li><li><a class="level is-mobile" href="#乐观锁"><span class="level-left"><span class="level-item">9.2</span><span class="level-item">乐观锁</span></span></a></li><li><a class="level is-mobile" href="#两种锁的选型"><span class="level-left"><span class="level-item">9.3</span><span class="level-item">两种锁的选型</span></span></a></li></ul></li><li><a class="level is-mobile" href="#为什么Redis是单线程"><span class="level-left"><span class="level-item">10</span><span class="level-item">为什么Redis是单线程</span></span></a></li><li><a class="level is-mobile" href="#Redis为什么快"><span class="level-left"><span class="level-item">11</span><span class="level-item">Redis为什么快</span></span></a></li><li><a class="level is-mobile" href="#Redis主从同步实现"><span class="level-left"><span class="level-item">12</span><span class="level-item">Redis主从同步实现</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#新节点"><span class="level-left"><span class="level-item">12.1</span><span class="level-item">新节点</span></span></a></li><li><a class="level is-mobile" href="#旧节点上线"><span class="level-left"><span class="level-item">12.2</span><span class="level-item">旧节点上线</span></span></a></li><li><a class="level is-mobile" href="#全量同步"><span class="level-left"><span class="level-item">12.3</span><span class="level-item">全量同步</span></span></a></li><li><a class="level is-mobile" href="#部分同步"><span class="level-left"><span class="level-item">12.4</span><span class="level-item">部分同步</span></span></a></li><li><a class="level is-mobile" href="#命令传播"><span class="level-left"><span class="level-item">12.5</span><span class="level-item">命令传播</span></span></a></li></ul></li><li><a class="level is-mobile" href="#哨兵的实现故障转移"><span class="level-left"><span class="level-item">13</span><span class="level-item">哨兵的实现故障转移</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#检测节点下线"><span class="level-left"><span class="level-item">13.1</span><span class="level-item">检测节点下线</span></span></a></li><li><a class="level is-mobile" href="#哨兵选举"><span class="level-left"><span class="level-item">13.2</span><span class="level-item">哨兵选举</span></span></a></li><li><a class="level is-mobile" href="#故障转移"><span class="level-left"><span class="level-item">13.3</span><span class="level-item">故障转移</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Redis的常用使用场景"><span class="level-left"><span class="level-item">14</span><span class="level-item">Redis的常用使用场景</span></span></a></li><li><a class="level is-mobile" href="#Lua在Redis中的使用"><span class="level-left"><span class="level-item">15</span><span class="level-item">Lua在Redis中的使用</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#什么是Lua"><span class="level-left"><span class="level-item">15.1</span><span class="level-item">什么是Lua</span></span></a></li><li><a class="level is-mobile" href="#为什么使用Lua"><span class="level-left"><span class="level-item">15.2</span><span class="level-item">为什么使用Lua</span></span></a></li><li><a class="level is-mobile" href="#lua的普遍用法"><span class="level-left"><span class="level-item">15.3</span><span class="level-item">lua的普遍用法</span></span></a></li><li><a class="level is-mobile" href="#lua的参数"><span class="level-left"><span class="level-item">15.4</span><span class="level-item">lua的参数</span></span></a></li><li><a class="level is-mobile" href="#哨兵模式中lua的执行逻辑"><span class="level-left"><span class="level-item">15.5</span><span class="level-item">哨兵模式中lua的执行逻辑</span></span></a></li></ul></li><li><a class="level is-mobile" href="#分布式锁"><span class="level-left"><span class="level-item">16</span><span class="level-item">分布式锁</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#要点"><span class="level-left"><span class="level-item">16.1</span><span class="level-item">要点</span></span></a></li></ul></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2022 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Contact me" href="mailto:ChnMig@Outlook.com"><i class="far fa-envelope"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script><script src="https://lib.baomitu.com/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://lib.baomitu.com/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><script src="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://lib.baomitu.com/lightgallery/1.10.0/js/lightgallery.min.js" defer></script><script src="https://lib.baomitu.com/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><link rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.css"><script src="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/auto-render.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://lib.baomitu.com/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

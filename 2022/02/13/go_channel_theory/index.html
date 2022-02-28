@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Golang Channel 实现原理 - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="面试的准备之一"><meta property="og:type" content="blog"><meta property="og:title" content="Golang Channel 实现原理"><meta property="og:url" content="https://www.chnmig.com/2022/02/13/go_channel_theory/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="面试的准备之一"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://www.chnmig.com/img/og_image.png"><meta property="article:published_time" content="2022-02-12T16:00:00.000Z"><meta property="article:modified_time" content="2022-02-12T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="Golang"><meta property="article:tag" content="源码分析"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.chnmig.com/2022/02/13/go_channel_theory/"},"headline":"Golang Channel 实现原理","image":["https://www.chnmig.com/img/og_image.png"],"datePublished":"2022-02-12T16:00:00.000Z","dateModified":"2022-02-12T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://www.chnmig.com/images/logo.gif"}},"description":"面试的准备之一"}</script><link rel="canonical" href="https://www.chnmig.com/2022/02/13/go_channel_theory/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://lib.baomitu.com/font-awesome/5.12.1/css/all.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?5306a4ae74c103fc71e3fb36eb8f9609";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><link rel="stylesheet" href="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/lightgallery/1.10.0/css/lightgallery.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/justifiedGallery/3.8.1/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://lib.baomitu.com/pace/1.2.4/pace.min.js"></script><meta name="generator" content="Hexo 6.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-02-12T16:00:00.000Z" title="2022/2/13 上午12:00:00">2022-02-13</time>发表</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">8 分钟读完 (大约1195个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Golang Channel 实现原理</h1><div class="content"><h2 id="前言-3">前言</h2>
+<p>最近真高产啊, 果然有压力就有动力了, 不知道能保持多久, 真是痛并快乐着</p>
+<h2 id="什么是-Channel">什么是 Channel</h2>
+<p><code>channel</code>常用来作为多个协程直接通信, 在真正编写代码中使用频率非常高, 他就是一个管道, 先进先出, 那么, 作为程序员, 有必要了解<code>channel</code>的实现原理</p>
+<h2 id="数据结构">数据结构</h2>
+<p>那么, 和往常一样, 还是从数据结构开始看起</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> hchan <span class="keyword">struct</span> {</span><br><span class="line">	qcount   <span class="keyword">uint</span>           <span class="comment">// 当前队列中剩余元素个数</span></span><br><span class="line">	dataqsiz <span class="keyword">uint</span>           <span class="comment">// 环形队列长度，即可以存放的元素个数</span></span><br><span class="line">	buf      unsafe.Pointer <span class="comment">// 环形队列指针</span></span><br><span class="line">	elemsize <span class="keyword">uint16</span>         <span class="comment">// 每个元素的大小</span></span><br><span class="line">	closed   <span class="keyword">uint32</span>	        <span class="comment">// 标识关闭状态</span></span><br><span class="line">	elemtype *_type         <span class="comment">// 元素类型</span></span><br><span class="line">	sendx    <span class="keyword">uint</span>           <span class="comment">// 队列下标，指示元素写入时存放到队列中的位置</span></span><br><span class="line">	recvx    <span class="keyword">uint</span>           <span class="comment">// 队列下标，指示元素从队列的该位置读出</span></span><br><span class="line">	recvq    waitq          <span class="comment">// 等待读消息的goroutine队列</span></span><br><span class="line">	sendq    waitq          <span class="comment">// 等待写消息的goroutine队列</span></span><br><span class="line">	lock mutex              <span class="comment">// 互斥锁，chan不允许并发读写</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="环形队列">环形队列</h2>
+<p>chan 内部实现了一个环形队列作为缓冲区, 你指定的缓冲区的长度就是这个环形队列的长度</p>
+<p>比如<code>make(chan int, 6)</code>, 在多次进行操作之后, 他的数据可能是</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">{</span><br><span class="line">  qcount: <span class="number">2</span>,  <span class="comment">// 代表队列中还有2个元素</span></span><br><span class="line">  dataqsiz: <span class="number">6</span>,  <span class="comment">// 代表队列长度(缓冲区)为6</span></span><br><span class="line">  buf: [<span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>],  <span class="comment">// 真正的数据, 假设两个数据都是1</span></span><br><span class="line">  sendx: <span class="number">3</span>,  <span class="comment">// 后续需要增加数据时, 从 buf 索引3开始</span></span><br><span class="line">  recvx: <span class="number">1</span>,  <span class="comment">// 需要读取数据是, 从 buf 索引1开始</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="等待队列">等待队列</h2>
+<p>我们知道, 如果缓冲区已满或者没有消费者获取数据时, 向 channel 写入数据会阻塞</p>
+<p>我们也知道, 如果缓冲区已空或者没有生产者生产数据时, 从 channel 获取数据也会阻塞</p>
+<p>对于一个 channel 来讲, 其生产者和消费者的 goroutine 存储在 hchan 的<code>recvq</code>和<code>sendq</code>中</p>
+<ul>
+<li><code>recvq</code>: 等待从 channel 读取数据的 goroutine</li>
+<li><code>sendq</code>: 等待向 channel 写入数据的 goroutine</li>
+</ul>
+<p>他们是互相唤醒的, 比如</p>
+<ul>
+<li>当 goroutine 向 channel 写入数据时, 会唤醒<code>recvq</code>里的 goroutine</li>
+<li>当 goroutine 从 channel 读取数据是, 会唤醒<code>sendq</code>里的 goroutine</li>
+</ul>
+<p>一般情况下 <code>recvq</code>和<code>sendq</code>至少有一个为空, 也就是说一般情况下不可能存在既有向 channel 写入数据的 goroutine 等待, 又有从 channel 获取数据的 goroutine 等待. 除非在同一个 goroutine 中使用 <code>select</code>向 channel 一边写一边读</p>
+<h2 id="类型信息">类型信息</h2>
+<p>在 channel 中, make 的时候就必须设定这个 channel 中存储的值的类型, 对应的字段如下</p>
+<ul>
+<li><code>elemtype</code> 每个元素的类型</li>
+<li><code>elemsize</code> 类型的大小, 主要用来在 buf 里定位元素</li>
+</ul>
+<h2 id="锁">锁</h2>
+<p>channel 内部实际上有一个互斥锁来保证同时仅允许被一个 goroutine 进行操作, 关于互斥锁原理可以查看我的博客, 这里不多赘述</p>
+<p>锁在<code>hchan</code>的字段是 <code>lock</code></p>
+<h2 id="创建-channel">创建 channel</h2>
+<p>创建 channel 使用 make, 例如<code>make(chan int, 6)</code>, 在 make 时, 就确定了 hchan 的<code>buf/elemsize/elemtype/dadaqsize</code>字段</p>
+<h2 id="写数据">写数据</h2>
+<p>向 channel 中写入数据的简单过程如下:</p>
+<ol>
+<li>判断<code>recvq</code>是否为空, 不为空则代表有 goroutine 在等待读数据, 也就是说缓冲区中没有数据了或者没有缓冲区, 此时会直接从<code>recvq</code>中取出 goroutine, 直接把 goroutine 唤醒并且将数据写入, 结束写入过程</li>
+<li>如果<code>recvq</code>为空,  代表此时没有 goroutine 在读数据, 此时, 如果 channel 中有缓冲区且缓冲区中有空余位置, 则直接将数据写入缓冲区, 结束过程</li>
+<li>如果 channel 缓冲区已满或者没有缓冲区时, 将等待发送的数据写入当前 goroutine 中, 同时将当前 goroutine 加入到<code>sendq</code>, 等待被读取的<code>goroutine</code>唤醒</li>
+</ol>
+<h2 id="读数据">读数据</h2>
+<p>读数据与写数据类似, 过程如下:</p>
+<ol>
+<li>判断<code>sendq</code>是否为空, 不为空则代表有 goroutine 在等待写数据, 此时判断缓冲区是否有值, 如果缓冲区有数据, 则从缓冲区首部(<code>recvx</code>)读取一个数据, 同时唤醒<code>sendq</code>中的等待写入 goroutine, 通知其写入数据, 结束流程</li>
+<li>如果没有缓冲区, 则从<code>senq</code>中获取等待发送数据的 goroutine, 获取数据并唤醒这个 goroutine, 结束流程</li>
+<li>如果当前<code>sendq</code>为空且缓冲区为空, 代表此时没有数据, 这时将 goroutine 加入到<code>recvq</code>中, 等待被写 goroutine 唤醒</li>
+</ol>
+<h2 id="关闭">关闭</h2>
+<p>关闭 channel 会把<code>recvq</code>中的 goroutine 全部唤醒, 然后将里面存储的数据设置为 nil. 然后将<code>senq</code>中的 goroutine 全部唤醒, 但是这些 goroutine 会导致 panic, 所以必须要确保这个 channel 在写入时都是开启的状态</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Golang Channel 实现原理</p><p><a href="https://www.chnmig.com/2022/02/13/go_channel_theory/">https://www.chnmig.com/2022/02/13/go_channel_theory/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>ChnMig</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-02-13</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-02-13</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Golang/">Golang</a><a class="link-muted mr-2" rel="tag" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2022/02/14/go_slice_memory/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">go 语言的 slice 注意点</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/02/12/go_sync_map_theory/"><span class="level-item">sync.map 原理分析</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#前言-3"><span class="level-left"><span class="level-item">1</span><span class="level-item">前言</span></span></a></li><li><a class="level is-mobile" href="#什么是-Channel"><span class="level-left"><span class="level-item">2</span><span class="level-item">什么是 Channel</span></span></a></li><li><a class="level is-mobile" href="#数据结构"><span class="level-left"><span class="level-item">3</span><span class="level-item">数据结构</span></span></a></li><li><a class="level is-mobile" href="#环形队列"><span class="level-left"><span class="level-item">4</span><span class="level-item">环形队列</span></span></a></li><li><a class="level is-mobile" href="#等待队列"><span class="level-left"><span class="level-item">5</span><span class="level-item">等待队列</span></span></a></li><li><a class="level is-mobile" href="#类型信息"><span class="level-left"><span class="level-item">6</span><span class="level-item">类型信息</span></span></a></li><li><a class="level is-mobile" href="#锁"><span class="level-left"><span class="level-item">7</span><span class="level-item">锁</span></span></a></li><li><a class="level is-mobile" href="#创建-channel"><span class="level-left"><span class="level-item">8</span><span class="level-item">创建 channel</span></span></a></li><li><a class="level is-mobile" href="#写数据"><span class="level-left"><span class="level-item">9</span><span class="level-item">写数据</span></span></a></li><li><a class="level is-mobile" href="#读数据"><span class="level-left"><span class="level-item">10</span><span class="level-item">读数据</span></span></a></li><li><a class="level is-mobile" href="#关闭"><span class="level-left"><span class="level-item">11</span><span class="level-item">关闭</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2022 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Contact me" href="mailto:ChnMig@Outlook.com"><i class="far fa-envelope"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script><script src="https://lib.baomitu.com/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://lib.baomitu.com/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><script src="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://lib.baomitu.com/lightgallery/1.10.0/js/lightgallery.min.js" defer></script><script src="https://lib.baomitu.com/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><link rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.css"><script src="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/auto-render.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://lib.baomitu.com/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

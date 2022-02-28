@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>Golang map 的底层原理 - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="大致讲解一下 golang 中 map 的实现..."><meta property="og:type" content="blog"><meta property="og:title" content="Golang map 的底层原理"><meta property="og:url" content="https://www.chnmig.com/2022/02/10/go_map_theory/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="大致讲解一下 golang 中 map 的实现..."><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://github.githubassets.com/images/icons/emoji/unicode/1f618.png?v8"><meta property="article:published_time" content="2022-02-09T16:00:00.000Z"><meta property="article:modified_time" content="2022-02-09T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="Golang"><meta property="article:tag" content="源码分析"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://github.githubassets.com/images/icons/emoji/unicode/1f618.png?v8"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.chnmig.com/2022/02/10/go_map_theory/"},"headline":"Golang map 的底层原理","image":[],"datePublished":"2022-02-09T16:00:00.000Z","dateModified":"2022-02-09T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://www.chnmig.com/images/logo.gif"}},"description":"大致讲解一下 golang 中 map 的实现..."}</script><link rel="canonical" href="https://www.chnmig.com/2022/02/10/go_map_theory/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://lib.baomitu.com/font-awesome/5.12.1/css/all.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?5306a4ae74c103fc71e3fb36eb8f9609";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><link rel="stylesheet" href="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/lightgallery/1.10.0/css/lightgallery.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/justifiedGallery/3.8.1/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://lib.baomitu.com/pace/1.2.4/pace.min.js"></script><meta name="generator" content="Hexo 6.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-02-09T16:00:00.000Z" title="2022/2/10 上午12:00:00">2022-02-10</time>发表</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">5 分钟读完 (大约748个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">Golang map 的底层原理</h1><div class="content"><h2 id="前言-7">前言</h2>
+<p>本文介绍 golang 中 map 的实现方式, 希望对读者和我有所帮助</p>
+<h2 id="结构-3">结构</h2>
+<p><code>map</code>是 go 语言中的基础的数据结构, 在寻找指定<code>key</code>时, 复杂度是<code>O(1)</code>, 在某些场景能发挥很大的作用</p>
+<p>golang 的 map 是 hashmap, 实现方式是<strong>数组+链表</strong>, 并且使用<strong>拉链法</strong>来取消 hash 的冲突</p>
+<p>map 主要有两个核心的数据结构, <code>hmap</code>和<code>bmap(bucket)</code>, 为什么说他核心呢? 因为 map 的实现就是依靠这两个结构体</p>
+<p><code>hmap</code>的结构有以下几个字段</p>
+<ul>
+<li>元素个数: int</li>
+<li>flags: uint8</li>
+<li>扩容字段: uint8</li>
+<li>溢出的 bucket 数量: uint16</li>
+<li>用于扩容的指针: *mapextra</li>
+<li>buckets <strong>数组</strong>指针: unsafa.Pointer</li>
+<li>搬迁进度: uintptr</li>
+<li>扩容时用于复制的 buckets 数组: unsafe.Pointer</li>
+<li>hash seed: uint32</li>
+</ul>
+<p>这里你需要重点了解的是<code>buckets 数组指针</code>,  也就是<code>bmap</code>, 那么<code>bmap</code>的结构如下</p>
+<ul>
+<li>高位哈希: [8]uint8</li>
+<li>字节数组(存储 key 和 value 的数组): []bytes</li>
+<li>指向扩容 bucket 的指针: pointer</li>
+</ul>
+<p>在<code>bmap</code>的<strong>字节数组</strong>中, 存储了我们真正的<code>key</code>和<code>value</code></p>
+<p>而<strong>高位哈希</strong>中存储了<code>key</code>的索引</p>
+<p><strong>指向扩容 bucket 的指针</strong>则存储了下一个<code>bmap</code>的位置, 所以说 bucket 是链表形式</p>
+<p>对于<code>bmap</code>中的字节数组部分存储这个<code>bmap</code>里面的所有<code>key</code>和<code>value</code>, 他是一个数组, 里面存储的结构是这样的</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">key0, key1, key2, value0, value1, value2</span><br></pre></td></tr></tbody></table></figure>
+<p>是将所有的 <code>key</code>和<code>key</code>排在一起,<code>value</code>和<code>value</code>排在一起</p>
+<p>这是为了<strong>内存对齐</strong>, 目的是减少空间浪费</p>
+<p>也就是说, <code>hmap</code>的结构应该是</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">		       hmap</span><br><span class="line">														</span><br><span class="line">bmap0  bmap1  bmap2</span><br><span class="line">|      |      |</span><br><span class="line">bmap3  bmap4  bmap5</span><br><span class="line">|      |      |</span><br></pre></td></tr></tbody></table></figure>
+<p>这种关系(我真是灵魂画手<span class="github-emoji"><span>😘</span><img src="https://github.githubassets.com/images/icons/emoji/unicode/1f618.png?v8" aria-hidden="true" onerror="this.parent.classList.add('github-emoji-fallback')"></span>)</p>
+<p>大致理解一下, 就是一个<code>hmap</code>里面包含了一个切片, 切片的每一个元素是<code>bmap</code>, 而每一个<code>bmap</code>里含有这个<code>bmap</code>的<code>key</code>和<code>value</code>(多个), 还有下一个<code>bmap</code>的指针地址</p>
+<h2 id="新增-key-时">新增 key 时</h2>
+<p>当新增一个<code>key</code>和<code>value</code>时, 会先对这个<code>key</code>进行哈希函数计算, 得到一个唯一的值, 是一个数字, 将这个数字切分为两个部分<code>高位</code>和<code>低位</code>, 使用<code>低位</code>寻找这个<code>key</code>应该存储到哪个<code>bmap</code>中, <code>高位</code>则记录了这个<code>key</code>在<code>bmap</code>的位置</p>
+<h2 id="map-扩容">map 扩容</h2>
+<p>当 map 空间不够时, 会将<code>bmap</code>的数组数量扩充一倍, 产生一个新的<code>bmap</code>数组</p>
+<p>然后把老的数据迁移到新的数组中</p>
+<p>这个转移并不是立刻完成的, 而是当访问到具体的某个<code>bmap</code>的时候, 才会把这个<code>bmap</code>中的数据转移到新的数组</p>
+<p>而且, 将老的<code>bmap</code>转移到新的列表之后, 并不会将老的<code>bmap</code>删除, 而是留给 GC 去清理</p>
+<h2 id="查找-key-时">查找 key 时</h2>
+<p>获取需要查找的<code>key</code>, 转成数字并切分为<code>高位</code>和<code>低位</code>, 通过<code>低位</code>定位<code>bmap</code>位置. 通过<code>高位</code>在<code>bmap</code>中寻找具体的值</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>Golang map 的底层原理</p><p><a href="https://www.chnmig.com/2022/02/10/go_map_theory/">https://www.chnmig.com/2022/02/10/go_map_theory/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>ChnMig</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-02-10</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-02-10</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Golang/">Golang</a><a class="link-muted mr-2" rel="tag" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2022/02/11/go_lock/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Golang 的锁</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/02/04/redis_interview/"><span class="level-item">Redis 常问知识点(简略)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#前言-7"><span class="level-left"><span class="level-item">1</span><span class="level-item">前言</span></span></a></li><li><a class="level is-mobile" href="#结构-3"><span class="level-left"><span class="level-item">2</span><span class="level-item">结构</span></span></a></li><li><a class="level is-mobile" href="#新增-key-时"><span class="level-left"><span class="level-item">3</span><span class="level-item">新增 key 时</span></span></a></li><li><a class="level is-mobile" href="#map-扩容"><span class="level-left"><span class="level-item">4</span><span class="level-item">map 扩容</span></span></a></li><li><a class="level is-mobile" href="#查找-key-时"><span class="level-left"><span class="level-item">5</span><span class="level-item">查找 key 时</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2022 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Contact me" href="mailto:ChnMig@Outlook.com"><i class="far fa-envelope"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script><script src="https://lib.baomitu.com/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://lib.baomitu.com/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><script src="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://lib.baomitu.com/lightgallery/1.10.0/js/lightgallery.min.js" defer></script><script src="https://lib.baomitu.com/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><link rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.css"><script src="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/auto-render.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://lib.baomitu.com/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>

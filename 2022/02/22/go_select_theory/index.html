@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>go select 原理解析 - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="go 的 select 是怎么运作的? 本篇大致总结"><meta property="og:type" content="blog"><meta property="og:title" content="go select 原理解析"><meta property="og:url" content="https://www.chnmig.com/2022/02/22/go_select_theory/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="go 的 select 是怎么运作的? 本篇大致总结"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://www.chnmig.com/img/og_image.png"><meta property="article:published_time" content="2022-02-21T16:00:00.000Z"><meta property="article:modified_time" content="2022-02-21T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="Golang"><meta property="article:tag" content="源码分析"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.chnmig.com/2022/02/22/go_select_theory/"},"headline":"go select 原理解析","image":["https://www.chnmig.com/img/og_image.png"],"datePublished":"2022-02-21T16:00:00.000Z","dateModified":"2022-02-21T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://www.chnmig.com/images/logo.gif"}},"description":"go 的 select 是怎么运作的? 本篇大致总结"}</script><link rel="canonical" href="https://www.chnmig.com/2022/02/22/go_select_theory/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://lib.baomitu.com/font-awesome/5.12.1/css/all.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/highlight.js/9.12.0/styles/atom-one-light.min.css"><link rel="stylesheet" href="https://fonts.lug.ustc.edu.cn/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?5306a4ae74c103fc71e3fb36eb8f9609";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><link rel="stylesheet" href="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/lightgallery/1.10.0/css/lightgallery.min.css"><link rel="stylesheet" href="https://lib.baomitu.com/justifiedGallery/3.8.1/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://lib.baomitu.com/pace/1.2.4/pace.min.js"></script><meta name="generator" content="Hexo 6.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-02-21T16:00:00.000Z" title="2022/2/22 上午12:00:00">2022-02-22</time>发表</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">7 分钟读完 (大约1032个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">go select 原理解析</h1><div class="content"><h2 id="概述">概述</h2>
+<p>go 的 <code>select</code> 语句是专门为了 channel 发送和接收消息而诞生的专用语句(不要和 <code>switch</code> 搞混了), 在语句的运行期间, 该  goroutine 是阻塞的.</p>
+<p>select 在 golang 的语言层提供了<code>I/O 多路复用</code>, 可以同时检测多个 channel</p>
+<h2 id="I-O-多路复用">I/O 多路复用</h2>
+<p>有必要了解一下 I/O 多路复用概念</p>
+<p>在不使用 select 时, 如果要监听 N 个 channel. 对于普通的多线程处理, 可能需要启动 N 个 goroutine, 每个 goroutine 监听一个 channel, 这样的缺点显而易见: 系统需要额外的创建和维护goroutine, 因为大多数时候, channel 都会阻塞, 只有少部分会接受到数据</p>
+<p>而使用 select 时, 可以做到在一个 goroutine 里监听多个 channel, 系统只需要维护一个 goroutine, N 个 channel 都依靠这一个 goroutine 进行数据的"运输", 当其中某一个 channel 有数据时, 根据对应的 channel 走不同的流程,  无需对额外的 goroutine 进行管理, 无疑提高了效率</p>
+<p>当然, select 也不要无节制的使用, 最好是在逻辑上有一定的关联性, 否则会破坏代码的可读性.</p>
+<h2 id="demo">demo</h2>
+<p>举个例子</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> {</span><br><span class="line">	ch1 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">1</span>)</span><br><span class="line">	ch2 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">1</span>)</span><br><span class="line">	<span class="keyword">select</span> {</span><br><span class="line">	<span class="keyword">case</span> v := &lt;-ch1:</span><br><span class="line">		<span class="comment">// 如果ch1通道成功读取数据，则执行该case处理语句</span></span><br><span class="line">		fmt.Printf(<span class="string">"ch1 = %v"</span>, v)</span><br><span class="line">	<span class="keyword">case</span> v := &lt;-ch2:</span><br><span class="line">		<span class="comment">// 如果ch2通道成功读取数据，则执行该case处理语句</span></span><br><span class="line">		fmt.Printf(<span class="string">"ch2 = %v"</span>, v)</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="comment">// 如果上面case都没有成功，则进入default处理流程</span></span><br><span class="line">		<span class="comment">// 如果没有 default, 会一直阻塞等待某个 case 成功</span></span><br><span class="line">		fmt.Println(<span class="string">"default!"</span>)</span><br><span class="line">	}</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>注意两个问题:</p>
+<ol>
+<li>select 并不是一个循环, 如果你需要反复的监听多个 channel, 搭配 <code>for{}</code>使用</li>
+<li>default 作用是当 case 都不成功时, 立刻进入 default 流程, 结束 select, 如果你需要阻塞住, 就不要使用 default</li>
+<li>当搭配<code>for{}</code>反复的执行 slelct 时, 如非业务要求, 否则不要使用 default, 会造成select 立即退出后重新循环</li>
+</ol>
+<p>所以, 常用的方式如下</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> {</span><br><span class="line">  <span class="keyword">select</span> {</span><br><span class="line">    <span class="keyword">case</span> v := &lt;-ch1:</span><br><span class="line">    <span class="comment">// 如果ch1通道成功读取数据，则执行该case处理语句</span></span><br><span class="line">    fmt.Printf(<span class="string">"ch1 = %v"</span>, v)</span><br><span class="line">    <span class="keyword">case</span> v := &lt;-ch2:</span><br><span class="line">    <span class="comment">// 如果ch2通道成功读取数据，则执行该case处理语句</span></span><br><span class="line">    fmt.Printf(<span class="string">"ch2 = %v"</span>, v)</span><br><span class="line">  }</span><br><span class="line">  <span class="comment">// 一次读取之后立刻再次监听</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="数据结构-2">数据结构</h2>
+<p>select 底层由两部分组成, <strong>case 语句</strong>和<strong>执行函数</strong></p>
+<p>每一个 case 语句结构如下</p>
+<figure class="highlight go"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> scase <span class="keyword">struct</span> {</span><br><span class="line">    c           *hchan         <span class="comment">// chan</span></span><br><span class="line">    elem        unsafe.Pointer <span class="comment">// 读或者写的缓冲区地址</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>这里的 hchan, 存放了监听的 channel, 在一个 select 中, 包含了多个 case. 这些 case 组成了一个数组</p>
+<h2 id="selectgo">selectgo</h2>
+<p>而执行的 select 语句, 实际上调用了函数<code>func selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool)</code></p>
+<p>参数意义如下:</p>
+<ul>
+<li>cas0: case 数组中第一个case的地址</li>
+<li>order0: case数组两倍长的缓冲区</li>
+<li>ncases: case 数组的长度</li>
+</ul>
+<p>selectgo 返回的说所选的 scase 的索引, 而如果 scase 是接收操作, 则返回是否收到值</p>
+<h2 id="流程">流程</h2>
+<p>我们在运行一个 select 时, 函数的调用顺序如下</p>
+<ol>
+<li><code>func Select(cases []SelectCase) (chosen int, recv Value, recvOK bool)</code></li>
+<li><code>func rselect([]runtimeSelect) (chosen int, recvOK bool) func</code></li>
+<li><code>selectgo(cas0 *scase, order0 *uint16, ncases int) (int, bool)</code></li>
+</ol>
+<p>前两个都是简单的初始化参数, 重点其实就在<code>selectgo</code>里</p>
+<p>selectgo 的处理流程如下:</p>
+<ol>
+<li>根据 cas0 获取 case 数组</li>
+<li>将 case 数组顺序打乱</li>
+<li>将 case 数组内的每个 chan 全部上锁</li>
+<li>遍历所有的 case 数组元素, 查看其是否可读和可写</li>
+<li>如果有可读或可写 case, 解锁所有的 chan, 返回对应的 chan 数据</li>
+<li>如果没有可读或可写, 有 defalut, 解锁所有的 chan, 返回 default 对应的 case</li>
+<li>如果两者都没有, 则将当前的 goroutine 阻塞, 将当前 goroutine的 G加入到case 数组内的所有 chan 的等待队列中, 然后所有 chan 解锁</li>
+<li>如果其中有一个 chan 可读或者可写时, 并且轮到这个 G 进行操作时, 将 goroutine 唤醒</li>
+<li>执行步骤3-7</li>
+</ol>
+</div><div class="article-licensing box"><div class="licensing-title"><p>go select 原理解析</p><p><a href="https://www.chnmig.com/2022/02/22/go_select_theory/">https://www.chnmig.com/2022/02/22/go_select_theory/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>ChnMig</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-02-22</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-02-22</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Golang/">Golang</a><a class="link-muted mr-2" rel="tag" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">源码分析</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/02/21/linux_thread_model/"><span class="level-item">总结一下 linux 中的线程模型</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#概述"><span class="level-left"><span class="level-item">1</span><span class="level-item">概述</span></span></a></li><li><a class="level is-mobile" href="#I-O-多路复用"><span class="level-left"><span class="level-item">2</span><span class="level-item">I/O 多路复用</span></span></a></li><li><a class="level is-mobile" href="#demo"><span class="level-left"><span class="level-item">3</span><span class="level-item">demo</span></span></a></li><li><a class="level is-mobile" href="#数据结构-2"><span class="level-left"><span class="level-item">4</span><span class="level-item">数据结构</span></span></a></li><li><a class="level is-mobile" href="#selectgo"><span class="level-left"><span class="level-item">5</span><span class="level-item">selectgo</span></span></a></li><li><a class="level is-mobile" href="#流程"><span class="level-left"><span class="level-item">6</span><span class="level-item">流程</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2022 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Contact me" href="mailto:ChnMig@Outlook.com"><i class="far fa-envelope"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script><script src="https://lib.baomitu.com/moment.js/2.22.2/moment-with-locales.min.js"></script><script src="https://lib.baomitu.com/clipboard.js/2.0.4/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><script src="https://lib.baomitu.com/cookieconsent/3.1.1/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://lib.baomitu.com/lightgallery/1.10.0/js/lightgallery.min.js" defer></script><script src="https://lib.baomitu.com/justifiedGallery/3.8.1/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><link rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.css"><script src="https://lib.baomitu.com/KaTeX/0.15.1/katex.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/auto-render.min.js" defer></script><script src="https://lib.baomitu.com/KaTeX/0.15.1/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://lib.baomitu.com/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://lib.baomitu.com/outdated-browser/1.1.5/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
