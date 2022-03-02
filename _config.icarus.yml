@@ -110,7 +110,7 @@ navbar:
         类别: /categories
         标签: /tags
         关于: /about
-        访问统计: http://tongji.baidu.com/web/welcome/ico?s=5306a4ae74c103fc71e3fb36eb8f9609
+        访问统计: https://tongji.baidu.com/web/welcome/ico?s=8c2572cbfe4082d1fcd1327e4614cf34
     # # Links to be shown on the right of the navigation bar
     # links:
     #     Download on GitHub:
@@ -343,7 +343,7 @@ plugins:
     # https://tongji.baidu.com
     baidu_analytics:
         # Baidu Analytics tracking ID
-        tracking_id: '5306a4ae74c103fc71e3fb36eb8f9609'
+        tracking_id: '8c2572cbfe4082d1fcd1327e4614cf34'
     # # Bing Webmaster Tools plugin settings
     # # https://www.bing.com/toolbox/webmaster/
     # bing_webmaster:
