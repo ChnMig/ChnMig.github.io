@@ -57,7 +57,7 @@ hexo clean && hexo deploy
 title: 文章标题              `文章标题`
 date: 2020-01-01            `发布时间`
 updated: 2020-01-01         `最后更新时间`
-comments: true              git`开启评论`
+comments: true              `开启评论`
 toc: true                   `开启目录`
 excerpt: 这是一篇文章...      `文章列表展示的文章简介`
 tags:                       `tag标签, 多个`
