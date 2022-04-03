@@ -165,7 +165,7 @@ tsc hello_world.ts
 
 已经生成了 JS 格式的代码, 然后 HTML 中引入修改为生成的 JS 代码, 也可以正常运行了
 
-### TS的类型注解
+## TS的类型注解
 
 > python 的3.8之后也有这个
 
@@ -211,11 +211,296 @@ Found 1 error in hello_world.ts:12
 
 这就是类型注解的好处, 如果你没有真正编写项目的开发经验, 你可能认为反而麻烦了, 而如果你真正的写过业务, 你就会明白为什么这样更好, 一个很重要的一点是, 他会在编译或者开发阶段就将错误排查出来, 以免在运行时发生出乎意料的结果(BUG), 找 BUG 是最痛苦的. 并且, 还可以提高代码的可读性.
 
+## 接口
+
+接口可以看作是若干类型注解的集合, 类似于 golang 的结构体
+
+``` typescript
+// 接口也是一种约束
+(()=>{
+    // 定义一个接口 Person
+    interface Person{
+        firstName: string, // 姓
+        lastName: string,  // 名
+    }
+    // 输出姓名的函数
+    // 接收参数 p, 类型为接口 Person
+    // 返回 string
+    function showFullName(p: Person) {
+        return p.firstName+"_"+p.lastName
+    }
+    // 定义对象, 其类型为 Person
+    const userA: Person = {
+        firstName: "AF",
+        lastName: "AL",
+    }
+    // 传入参数
+    console.log(showFullName(userA))
+})()
+```
+
+接口的存在, 可以更加方便的进行开发和约束
+
+需要注意的是, 不遵守接口规范, 比如传递一个其他的接口类型, 或者接口中的某一个属性不设置, 在直接运行 TS 时会出现问题, 但是在转到 JS 时可以正常转, 这是因为 JS 本身很随便
+
+当然, 我更推荐按照标准去写, 这样能提高代码的健壮性, 如果你使用 TS, 你就应该遵守其规则
+
+## 类
+
+类这个概念, 如果是后端开发, 想必会非常熟悉, 我直接上代码
+
+``` typescript
+// 接口也是一种约束
+(()=>{
+    // 定义一个接口 Person
+    interface Person{
+        firstName: string, // 姓
+        lastName: string,  // 名
+    }
+    // 定义一个类 User
+    class User{
+        firstName: string // 姓
+        lastName: string  // 名
+        fullName: string  // 全称
+        // 类的构造函数, 在类创建时执行
+        constructor(firstName: string, lastName: string){
+            this.firstName = firstName
+            this.lastName = lastName
+            this.fullName = this.firstName+"_"+this.lastName
+        }
+    }
+    // 创建类的对象
+    function greeter (person: Person) {
+        return 'Hello, ' + person.firstName + ' ' + person.lastName
+    }
+    
+    // 创建 user 对象
+    let user = new User('Yee', 'Huang')
+
+    // 因为 类 User 属性包括了接口 Person, 所以也可以使用
+    console.log(greeter(user))
+})()
+```
+
+这里的接口和对象的使用, 有些人可能会感觉到疑惑, 其实接口是抽象的概念, 任何结构, 只要有接口的对应字段, 就可以调用接口, 比如
+
+``` typescript
+// 接口也是一种约束
+(()=>{
+    // 定义一个接口 Person
+    interface Person{
+        firstName: string, // 姓
+        lastName: string,  // 名
+    }
+    interface P1{
+        firstName: string, // 姓
+        lastName: string,  // 名
+    }
+    // 输出姓名的函数
+    // 接收参数 p, 类型为接口 Person
+    // 返回 string
+    function showFullName(p: Person) {
+        return p.firstName+"_"+p.lastName
+    }
+    // 定义对象, 其类型为 P1
+    const userA: P1 = {
+        firstName: "AF",
+        lastName: "AL",
+    }
+    // 传入参数
+    // 也可以正常的使用
+    // 因为接口是抽象的
+    console.log(showFullName(userA))
+})()
+```
+
+## webpack 打包 TS 项目
+
+一个项目, 肯定不止一个文件, 都是由特定的规则和目录组成
+
+### 初始化
+
+在写一个新项目之前, 找一个新的文件夹, 执行 `npm init -y`
+
+会在最上层目录生成 `package.json`, 这里是 npm 的配置文件
+
+再执行 `tsc --init` 命令, 生成 `tsconfig.json` 文件, 这个是 TS 的配置
+
+随后我们新建几个文件, 目录如下
+
+``` bash
+.
+├── build
+│   └── webpack.config.js
+├── package.json
+├── public
+│   └── index.html
+├── src
+│   └── main.ts
+└── tsconfig.json
+
+3 directories, 5 files
+```
+
+### 目录结构和代码
+
+其中, `src`目录中存放具体的代码, 我们这里就单独放一个`main.ts`, 内容如下
+
+这里需要说明的是, 在视频中, 讲解人这里代码是`document.write('Hello Webpack TS!')`,  可以在 html 中动态的添加数据, 但是新的浏览器, 默认是禁止异步加载的 js 修改 document 结构的, 需要额外设置, 这里为了专心学习打包, 选择了 console.log
+
+``` typescript
+console.log("webpack")
+```
+
+`public`目录存放 html和其他静态资源等, 这里的`index.html`内容为
+
+``` html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>
+```
+
+`build`目录存放打包构建时的文件, 这里存放一个 webpack 打包时需要的配置文件`webpack.config.js`, 内容为
+
+``` js
+const {CleanWebpackPlugin} = require('clean-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const path = require('path')
+
+const isProd = process.env.NODE_ENV === 'production' // 是否生产环境
+
+function resolve (dir) {
+  return path.resolve(__dirname, '..', dir)
+}
+
+module.exports = {
+  mode: isProd ? 'production' : 'development',
+  entry: {
+    app: './src/main.ts'  // TS 的起始文件位置
+  },
+
+  output: {
+    path: resolve('dist'),  // 打包后的文件保存目录
+    filename: '[name].[contenthash:8].js'  // 文件名格式
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        include: [resolve('src')]
+      }
+    ]
+  },
+
+  plugins: [
+    new CleanWebpackPlugin({
+    }),
+
+    new HtmlWebpackPlugin({
+      template: './public/index.html'
+    })
+  ],
+
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js']
+  },
+
+  devtool: 'eval-cheap-module-source-map',  // 这里兼容 webpack 新版本, 修改了参数
+
+  devServer: {
+    host: 'localhost', // 主机名
+    port: 8081,  // 端口
+    open: true  // 自动打开端口
+  },
+}
+```
+
+### 安装必要依赖
+
+而后, 我们需要为项目安装几个依赖
+
+``` bash
+yarn add -D typescript  # TS 依赖
+yarn add -D webpack webpack-cli #  webpack 打包
+yarn add -D webpack-dev-server  # dev 环境测试
+yarn add -D html-webpack-plugin clean-webpack-plugin  # 删除之前打包的文件
+yarn add -D ts-loader  # ts
+yarn add -D cross-env  # 跨平台打包
+```
+
+安装完成后, 会新增加一个目录`node_models`, 存放着若干个依赖文件, 这里的东西不需要自己修改
+
+修改`package.json`, 主要是修改启动时的参数(json 的 scripts 部分), 同时也可以发现, 刚才 add 的几个依赖, 也已经自动加入到了 json 文件中
+
+``` json
+{
+  "name": "01",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --config build/webpack.config.js",
+    "build": "cross-env NODE_ENV=production webpack --config build/webpack.config.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "clean-webpack-plugin": "^4.0.0",
+    "cross-env": "^7.0.3",
+    "html-webpack-plugin": "^5.5.0",
+    "ts-loader": "^9.2.8",
+    "typescript": "^4.6.3",
+    "webpack": "^5.71.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.4"
+  }
+}
+```
+
+### 运行 dev 环境
+
+``` bash
+yarn dev
+```
+
+会自动唤醒浏览器, 打开页面, 打开调试, 发现打印出了`webpack`
+
+### 运行 build
+
+``` bash
+yarn build
+```
+
+完成后, 会生成文件夹`dist`, 其中存放了打包好的代码
+
+``` bash
+.
+├── app.7e4f7be0.js
+└── index.html
+
+0 directories, 2 files
+```
+
+这里的代码都已经被压缩过了, 目的是减少网络传输时间, 有兴趣的可以自行格式化查看
+
 ## TODO
 
-[尚硅谷Vue.JS教程快速入门到项目实战（Vue3/VueJS技术详解）_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1ra4y1H7ih?p=6&spm_id_from=pageDriver)
+[尚硅谷Vue.JS教程快速入门到项目实战（Vue3/VueJS技术详解）_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1ra4y1H7ih?p=10&spm_id_from=pageDriver)
 
-下周再看
+明天再看
 
  
 
