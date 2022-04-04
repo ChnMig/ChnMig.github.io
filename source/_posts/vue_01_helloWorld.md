@@ -1,10 +1,10 @@
 ---
 title: Vue3 从入门到入土(TypeScript入门)
 date: 2022-03-27            
-updated: 2022-03-27         
+updated: 2022-03-29         
 comments: true              
 toc: true                   
-excerpt: Vue3入门第一章, 主要是 TS 的内容
+excerpt: Vue3入门第一章, 主要是 TS 的内容, 涉及到 TS 入门方面
 tags:                       
 - Vue
 categories:                 
@@ -495,36 +495,3 @@ yarn build
 ```
 
 这里的代码都已经被压缩过了, 目的是减少网络传输时间, 有兴趣的可以自行格式化查看
-
-## TODO
-
-[尚硅谷Vue.JS教程快速入门到项目实战（Vue3/VueJS技术详解）_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1ra4y1H7ih?p=10&spm_id_from=pageDriver)
-
-明天再看
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
