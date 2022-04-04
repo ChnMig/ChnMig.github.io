@@ -1,7 +1,7 @@
 ---
 title: Vue3 从入门到入土(TypeScript数据类型)
 date: 2022-04-03            
-updated: 2022-04-24        
+updated: 2022-04-04        
 comments: true              
 toc: true                   
 excerpt: Vue3入门第二章, 主要是 TS 的内容, 涉及到 TS 数据类型和基本使用
@@ -10,8 +10,6 @@ tags:
 categories:                 
 - 编程
 ---
-
-
 
 ## 数字/字符串/布尔
 
