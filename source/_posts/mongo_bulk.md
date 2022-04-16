@@ -180,7 +180,7 @@ var mongoClient *mongo.Client
 
 func InitMDB() error {
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb://teinfra_hs_log:6IV1iGYEqRqCpscYNk4VtYZx@10.100.202.212:15000,10.100.202.215:15000,10.100.202.209:15000/teinfra_hs_log?replicaSet=replica")
+	clientOptions := options.Client().ApplyURI("mongodb://user:pwd@127.0.0.1:15000/test?replicaSet=replica")
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -280,7 +280,7 @@ var mongoClient *mongo.Client
 
 func InitMDB() error {
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb://teinfra_hs_log:6IV1iGYEqRqCpscYNk4VtYZx@10.100.202.212:15000,10.100.202.215:15000,10.100.202.209:15000/teinfra_hs_log?replicaSet=replica")
+	clientOptions := options.Client().ApplyURI("mongodb://user:pwd@127.0.0.1:15000/test?replicaSet=replica")
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
