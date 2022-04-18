@@ -76,6 +76,7 @@ func Demo() {
 
 func main() {
 	InitMDB()
+	TaskChan = make(chan Task, 1)
 	Demo()
 }
 
@@ -149,6 +150,7 @@ func Demo() {
 
 func main() {
 	InitMDB()
+	TaskChan = make(chan Task, 1)
 	Demo()
 }
 
