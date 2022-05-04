@@ -411,8 +411,8 @@ plugins:
 # http://ppoffice.github.io/hexo-theme-icarus/Configuration/icarus%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97-cdn%E6%8F%90%E4%BE%9B%E5%95%86/
 providers:
     # Name or URL template of the JavaScript and/or stylesheet CDN provider
-    cdn: 75cdn
+    cdn: jsdelivr
     # Name or URL template of the webfont CDN provider
-    fontcdn: ustc
+    fontcdn: google
     # Name or URL of the fontawesome icon font CDN provider
-    iconcdn: 75cdn
+    iconcdn: fontawesome
