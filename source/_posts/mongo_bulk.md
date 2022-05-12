@@ -327,12 +327,13 @@ func Demo() {
 	w := []mongo.WriteModel{}
 	opt := options.BulkWriteOptions{}
 	opt.SetOrdered(true)             // 设置执行为顺序的
-	ticket := time.Tick(maxWiteTime) // 设置定时器, 每 maxWiteTime 触发一次 chan
+	ticket := time.NewTicker(maxWiteTime) // 设置定时器, 每 maxWiteTime 触发一次 chan
 	for {
 		select {
 		case t, ok := <-TaskChan:
 			if !ok {
 				fmt.Println("down")
+				ticket.Stop()  // 关闭定时器防止内存泄露		
 				return
 			}
 			// 如果长度未达到规定的最大长度, 添加到 w 后等待下一次循环
@@ -346,7 +347,7 @@ func Demo() {
 				bulk(w, opt)
 				w = []mongo.WriteModel{}
 			}
-		case <-ticket: // 300ms 触发一次
+		case <-ticket.C: // 300ms 触发一次
 			if len(w) != 0 { // 如果 w 有值, 则提交给 mongo
 				bulk(w, opt)
 				w = []mongo.WriteModel{}
