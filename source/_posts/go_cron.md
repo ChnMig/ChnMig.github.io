@@ -39,7 +39,6 @@ var myCron *cron.Cron
 // InitAndStart init cron task
 func InitAndStart() {
 	myCron = cron.New()
-	defer myCron.Stop().Done()
 	// c.AddFunc
 	// https://en.wikipedia.org/wiki/Cron
 	userOfflineDetectionTaskID, err := myCron.AddFunc(fmt.Sprintf("*/%v * * * * ", 1), userOfflineDetection)
@@ -48,7 +47,7 @@ func InitAndStart() {
 	}
 	log.Printf("Successfully Add userOfflineDetection To Cron, ID: %v", userOfflineDetectionTaskID)
 	// start
-	myCron.Start()
+	myCron.Run()
 }
 
 // userOfflineDetection User offline detection
@@ -57,7 +56,7 @@ func userOfflineDetection() {
 }
 
 func main() {
-	InitAndStart()
+	go InitAndStart()
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel() // 关闭管道
 	c := make(chan os.Signal, 1)
@@ -86,7 +85,7 @@ myCron.Start() 则启动寄存器, 如果这个Goroutine中已经启动了 Cron,
 需要注意的是, 在寄存器启动后你仍然可以使用 AddFunc 来注册新的定时任务, 也是可以正常的注册的, 例如
 
 ``` go
-myCron.Start()
+myCron.Start(). // Start 不会导致阻塞, Run 会阻塞
 myCron.AddFunc("* 1 * * *", userOfflineDetection)
 ```
 
@@ -146,7 +145,6 @@ var myCron *cron.Cron
 // InitAndStart init cron task
 func InitAndStart() {
 	myCron = cron.New(cron.WithSeconds())  // add seconds parse support
-	defer myCron.Stop().Done()
 	// c.AddFunc
 	// https://en.wikipedia.org/wiki/Cron
 	userOfflineDetectionTaskID, err := myCron.AddFunc(fmt.Sprintf("0 */%v * * * * ", 1), userOfflineDetection)
@@ -154,8 +152,8 @@ func InitAndStart() {
 		log.Fatal(err)
 	}
 	log.Printf("Successfully Add userOfflineDetection To Cron, ID: %v", userOfflineDetectionTaskID)
-	// start
-	myCron.Start()
+	// start && Run
+	myCron.Run()
 }
 
 // userOfflineDetection User offline detection
@@ -164,7 +162,7 @@ func userOfflineDetection() {
 }
 
 func main() {
-	InitAndStart()
+	go InitAndStart()
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel() // 关闭管道
 	c := make(chan os.Signal, 1)
