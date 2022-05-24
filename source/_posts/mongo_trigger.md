@@ -271,6 +271,8 @@ func ValueParser(row interface{}) string {
 		return row
 	case primitive.ObjectID:
 		return row.Hex()
+	case time.Time:
+		return row.String()
 	default:
 		log.Printf("unsupport row: %v\n", row)
 		return fmt.Sprintf("%v", row)
