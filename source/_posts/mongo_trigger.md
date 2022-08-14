@@ -1,7 +1,7 @@
 ---
 title: mongo 初探触发器
 date: 2022-05-23            
-updated: 2022-05-23         
+updated: 2022-06-11         
 comments: true              
 toc: true                   
 excerpt: mongodb 的触发器可以帮助我们方便的实现某些功能, 例如对数据的操作进行记录
@@ -269,6 +269,8 @@ func ValueParser(row interface{}) string {
 		return fmt.Sprintf("%d", row)
 	case string:
 		return row
+	case bool:
+		return fmt.Sprintf("%v", row)
 	case primitive.ObjectID:
 		return row.Hex()
 	case time.Time:
@@ -481,28 +483,35 @@ var taggerFileds = []string{"ip", "user"} // 感兴趣的字段, 不在list 中�
 var taggerTable = "demo"                  // 感兴趣的表
 
 func SetAndListenTrigger(db, table string, fileds []string) {
-	// conn := GetMDB().Database(db) // 这是监听整个数据库, 可通过回调的字段判断哪张表和字段变动
-	conn := GetMDBCollection(db, table) // 监听某张表
-	// options.UpdateLookup 作用是传送的数据加上了本document当前最新的所有数据, 目的是为了解决用户 a 连续两次更新同一条数据, 第二次更新 mongodb 不会将 updated_by 带上的问题
-	// options.UpdateLookup 返回的是已经更新后的新数据, 并不是老数据
-	s, err := conn.Watch(context.TODO(), mongo.Pipeline{}, options.ChangeStream().SetFullDocument(options.UpdateLookup)) // 设置监听所有事件, 如需修改可参照 https://www.mongodb.com/docs/manual/changeStreams/
-	// UpdateLookup
-	if err != nil {
-		log.Fatalln(err)
-	}
-	for {
-		// for 监听每一个事件
-		if ok := s.Next(context.TODO()); !ok {
+	for { // 防止网络波动导致的 timeout, 如果出现问题, 重新获取conn监听
+		// conn := GetMDB().Database(db) // 这是监听整个数据库, 可通过回调的字段判断哪张表和字段变动
+		conn := GetMDBCollection(db, table) // 监听某张表
+		// options.UpdateLookup 作用是传送的数据加上了本document当前最新的所有数据, 目的是为了解决用户 a 连续两次更新同一条数据, 第二次更新 mongodb 不会将 updated_by 带上的问题
+		// options.UpdateLookup 返回的是已经更新后的新数据, 并不是老数据
+		s, err := conn.Watch(context.TODO(), mongo.Pipeline{}, options.ChangeStream().SetFullDocument(options.UpdateLookup)) // 设置监听所有事件, 如需修改可参照 https://www.mongodb.com/docs/manual/changeStreams/
+		// UpdateLookup
+		if err != nil {
+			// 网络断开, 导致无法连接, 1s 后重试
 			log.Println(err)
+			time.Sleep(time.Second * 1)
 			continue
 		}
-		fmt.Println(s.Current) // 这里是具体的事件内容
-		changeDoc := ChangeDoc{}
-		if err := s.Decode(&changeDoc); err != nil { // 解析 body
-			log.Println(err)
-			continue
+		for {
+			// for 监听每一个事件
+			if ok := s.Next(context.TODO()); !ok {
+				log.Println(err)
+				// 重新监听
+				break
+			}
+			fmt.Println(s.Current) // 这里是具体的事件内容
+			changeDoc := ChangeDoc{}
+			if err := s.Decode(&changeDoc); err != nil { // 解析 body
+				log.Println(err)
+				// 重新监听
+				break
+			}
+			changeDoc.Parse(fileds) // 交给 parse 处理
 		}
-		changeDoc.Parse(fileds) // 交给 parse 处理
 	}
 }
 
