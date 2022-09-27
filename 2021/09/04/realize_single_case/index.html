@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>单例的实现 - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="单例模式的几种实现"><meta property="og:type" content="blog"><meta property="og:title" content="单例的实现"><meta property="og:url" content="https://www.chnmig.com/2021/09/04/realize_single_case/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="单例模式的几种实现"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://github.githubassets.com/images/icons/emoji/unicode/1f62c.png?v8"><meta property="article:published_time" content="2021-09-03T16:00:00.000Z"><meta property="article:modified_time" content="2021-09-03T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="Python"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://github.githubassets.com/images/icons/emoji/unicode/1f62c.png?v8"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.chnmig.com/2021/09/04/realize_single_case/"},"headline":"单例的实现","image":[],"datePublished":"2021-09-03T16:00:00.000Z","dateModified":"2021-09-03T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://www.chnmig.com/images/logo.gif"}},"description":"单例模式的几种实现"}</script><link rel="canonical" href="https://www.chnmig.com/2021/09/04/realize_single_case/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>单例的实现 - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="单例模式的几种实现"><meta property="og:type" content="blog"><meta property="og:title" content="单例的实现"><meta property="og:url" content="https://www.chnmig.com/2021/09/04/realize_single_case/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="单例模式的几种实现"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://github.githubassets.com/images/icons/emoji/unicode/1f62c.png?v8"><meta property="article:published_time" content="2021-09-03T16:00:00.000Z"><meta property="article:modified_time" content="2021-09-03T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="Python"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://github.githubassets.com/images/icons/emoji/unicode/1f62c.png?v8"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.chnmig.com/2021/09/04/realize_single_case/"},"headline":"单例的实现","image":[],"datePublished":"2021-09-03T16:00:00.000Z","dateModified":"2021-09-03T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://www.chnmig.com/images/logo.gif"}},"description":"单例模式的几种实现"}</script><link rel="canonical" href="https://www.chnmig.com/2021/09/04/realize_single_case/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
             hm.src = "//hm.baidu.com/hm.js?8c2572cbfe4082d1fcd1327e4614cf34";
@@ -11,29 +11,30 @@
           if (!location.hash) {
             return;
           }
-          Array
-              .from(document.querySelectorAll('.tab-content'))
-              .forEach($tab => {
-                  $tab.classList.add('is-hidden');
-              });
-          Array
-              .from(document.querySelectorAll('.tabs li'))
-              .forEach($tab => {
-                  $tab.classList.remove('is-active');
-              });
+
+          const $tabMenu = document.querySelector(`a[href="${location.hash}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
           const $activeTab = document.querySelector(location.hash);
           if ($activeTab) {
               $activeTab.classList.remove('is-hidden');
-          }
-          const $tabMenu = document.querySelector(`a[href="${location.hash}"]`);
-          if ($tabMenu) {
-              $tabMenu.parentElement.classList.add('is-active');
           }
       }
       switchTab();
       window.addEventListener('hashchange', switchTab, false);
   })();
-  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.2.0">
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
 </head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="https://tongji.baidu.com/web/welcome/ico?s=8c2572cbfe4082d1fcd1327e4614cf34">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-09-03T16:00:00.000Z" title="2021/9/4 00:00:00">2021-09-04</time>发表</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">18 分钟读完 (大约2671个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">单例的实现</h1><div class="content"><h2 id="单例的实现">单例的实现</h2>
 <p>提前祝大家过个好年</p>
