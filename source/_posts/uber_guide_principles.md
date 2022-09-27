@@ -1,7 +1,7 @@
 ---
 title: uber go code 规范(指导原则)
-date: 2021-04-18            
-updated: 2021-06-13         
+date: 2022-04-18            
+updated: 2022-06-14         
 comments: true              
 toc: true                   
 excerpt: 这里是 uber 团队出的 go 代码规范指南的中文版, 注意只是指南
@@ -10,7 +10,6 @@ tags:
 categories:                 
 - 编程
 ---
-
 ## 前言
 从接触 Golang 到现在, 感觉到的很深的一点是, go 的代码无论是大佬还是菜鸟写出的代码, 都有着大体统一的 格式/流程, 这也是 Go 被开发者喜爱的一个原因, 但是还有一些, 比如变量的命名方式等, 可以称之为 风格 的东西, 却不尽相同, 我在开发中, 其实也希望有一个相对权威的指导意见, 后来就找到了 uber 团队出品的开发规范.
 uber 是众多公司中, 比较早使用 go 语言的了, 其本身也开源了一些优质的模块, 有机会的话希望也能向大家展示一下, 而在 uber 内部开发中, 经过持续的迭代, 开源了自己的代码规范, 这里给大家解读一下
@@ -1049,8 +1048,61 @@ if err != nil {
 go 语言内置了一部分原始数据类型的原子操作功能, 实现在包  [sync/atomic](https://golang.org/pkg/sync/atomic/) 中, 原子操作可以防止资源竞争导致可能出现的错误, 但是开发者很容易忘记使用这些原子操作.
 [go.uber.org/atomic](https://godoc.org/go.uber.org/atomic) 通过隐藏基础类型为这些操作增加了类型安全性。此外，它包括一个方便的`atomic.Bool`类型
 ## 避免可变的全局变量
-//  TODO
-[guide/style.md at master · uber-go/guide (github.com)](https://github.com/uber-go/guide/blob/master/style.md#avoid-mutable-globals)
+在初始化完成后, 应该尽量避免改变全局变量, 这样会导致可能会出现的, 其他地方修改这个全局变量, 从而发生预期值外的错误.
+**正确示例**
+``` go
+// sign.go
+
+var _timeNow = time.Now  // 设置一个全局变量
+
+func sign(msg string) string {
+  now := _timeNow()  // 函数中使用这个全局变量
+  return signWithTime(msg, now)
+}
+
+// main.go
+func Sign(t *testing.T) {
+  oldTimeNow := _timeNow
+  _timeNow = func() time.Time {
+	// 覆盖了全局变量
+	// 此时其他地方调用 sign 会导致出现问题
+    return someFixedTime  
+  }
+  defer func() { _timeNow = oldTimeNow }()
+}
+```
+**错误示例**
+``` go
+// sign.go
+
+// 设定结构体, 将原本的全局变量设置为结构体的某一个字段
+type signer struct {
+  now func() time.Time
+}
+
+func newSigner() *signer {
+  // 新建一个新的 singer, 而不是全局变量, 是这个对象私有的属性
+  return &signer{
+    now: time.Now,
+  }
+}
+
+func (s *signer) Sign(msg string) string {
+  // 调用时, 只使用自己的私有的属性
+  now := s.now()
+  return signWithTime(msg, now)
+}
+
+// main.go
+
+func Signer(t *testing.T) {
+  s := newSigner()  // 创建一个新的 singer
+  s.now = func() time.Time {
+    // 对属性进行修改, 不影响其他使用
+    return someFixedTime
+  }
+}
+```
 ## 避免在公共结构中嵌入类型
 直接在公共结构体中嵌入类型会导致这个类型的实现细节暴露出去, 导致分层失败, 同时还会对以后可能的迭代产生阻碍, 同时不利于文档的编写
 假设有一个结构体 `AbstractList`, 实现了`Add`和`Remove`方法
