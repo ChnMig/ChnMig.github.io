@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>浅尝 ECDHE 协议流程 - ChnMig的个人网站</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="ChnMig的个人网站"><meta name="msapplication-TileImage" content="/images/logo.ico"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ChnMig的个人网站"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="简单了解一下 ECDHE"><meta property="og:type" content="blog"><meta property="og:title" content="浅尝 ECDHE 协议流程"><meta property="og:url" content="https://www.chnmig.com/2022/10/17/ecdhe/"><meta property="og:site_name" content="ChnMig的个人网站"><meta property="og:description" content="简单了解一下 ECDHE"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://www.chnmig.com/images/posts/5.png"><meta property="og:image" content="https://www.chnmig.com/images/posts/6.png"><meta property="og:image" content="https://www.chnmig.com/images/posts/7.png"><meta property="og:image" content="https://www.chnmig.com/images/posts/8.png"><meta property="og:image" content="https://www.chnmig.com/images/posts/9.png"><meta property="og:image" content="https://www.chnmig.com/images/posts/10.png"><meta property="og:image" content="https://www.chnmig.com/images/posts/11.png"><meta property="article:published_time" content="2022-10-16T16:00:00.000Z"><meta property="article:modified_time" content="2022-10-27T16:00:00.000Z"><meta property="article:author" content="ChnMig"><meta property="article:tag" content="架构"><meta property="article:tag" content="Golang"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://www.chnmig.com/images/posts/5.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.chnmig.com/2022/10/17/ecdhe/"},"headline":"浅尝 ECDHE 协议流程","image":["https://www.chnmig.com/images/posts/5.png","https://www.chnmig.com/images/posts/6.png","https://www.chnmig.com/images/posts/7.png","https://www.chnmig.com/images/posts/8.png","https://www.chnmig.com/images/posts/9.png","https://www.chnmig.com/images/posts/10.png","https://www.chnmig.com/images/posts/11.png"],"datePublished":"2022-10-16T16:00:00.000Z","dateModified":"2022-10-27T16:00:00.000Z","author":{"@type":"Person","name":"ChnMig"},"publisher":{"@type":"Organization","name":"ChnMig的个人网站","logo":{"@type":"ImageObject","url":"https://www.chnmig.com/images/logo.gif"}},"description":"简单了解一下 ECDHE"}</script><link rel="canonical" href="https://www.chnmig.com/2022/10/17/ecdhe/"><link rel="icon" href="/images/logo.ico"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><script>var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "//hm.baidu.com/hm.js?8c2572cbfe4082d1fcd1327e4614cf34";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css"><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const $tabMenu = document.querySelector(`a[href="${location.hash}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(location.hash);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">主页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">类别</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a><a class="navbar-item" target="_blank" rel="noopener" href="https://tongji.baidu.com/web/welcome/ico?s=8c2572cbfe4082d1fcd1327e4614cf34">访问统计</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2022-10-16T16:00:00.000Z" title="2022/10/17 00:00:00">2022-10-17</time>发表</span><span class="level-item"><time dateTime="2022-10-27T16:00:00.000Z" title="2022/10/28 00:00:00">2022-10-28</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">16 分钟读完 (大约2458个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">浅尝 ECDHE 协议流程</h1><div class="content"><h2 id="前言">前言</h2>
+<p>ECDHE 我之前是听都没听过, 但是新业务需要对前后端通信进行加密, 经过大佬推荐才知道有这个东西, 经过几天的学习和踩坑😇, 才大致明白其流程和使用方式.<br>
+过程坎坷, 好在最后还是成功运用到了业务中, 大大提高了业务的安全性. 👍<br>
+这里记录一下本人对 ECDHE 的理解和注意要点</p>
+<h2 id="ECDHE">ECDHE</h2>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%A9%A2%E5%9C%93%E6%9B%B2%E7%B7%9A%E8%BF%AA%E8%8F%B2-%E8%B5%AB%E7%88%BE%E6%9B%BC%E9%87%91%E9%91%B0%E4%BA%A4%E6%8F%9B">椭圆曲线迪菲-赫尔曼金钥交换 - 维基百科，自由的百科全书 (wikipedia.org)</a><br>
+我们先来说说 ECDH, ECDH(Elliptic Curve Diffie–Hellman key exchange) 是一种密钥协商协议, 其精髓是通过椭圆曲线算法(ECC), 让客户端和服务端不传输私钥(需要传输公钥), 就可以计算出一样的结果(共有加密资料), 即使协商过程被第三方(中间人)知晓和监听, 也不会泄露密钥.<br>
+而 ECDHE(ECDH Ephemeral) 与 ECDH 无本质差别, 他们协商的流程一模一样, 只是ECDHE代表协商出的共有加密资料是临时的, 就算当前的加密资料泄露, 也不会影响其之前的历史数据被解密, 这是使用方式决定的, 大白话意思就是, 我们通过 ECDH 生成的共有加密数据有实效性, 会通过逻辑在一段时间或特定事件后重新协商, 而不是只协商一次, 如果只协商一次, 如果共有加密资料被泄露, 则之前的所有数据都可以解开. 这种共有加密数据资料泄露也不会对历史数据有影响的特性在密码学中被称为 前向安全性.</p>
+<h2 id="椭圆曲线密码学-ECC">椭圆曲线密码学(ECC)</h2>
+<p>ECC 是 ECDH 的核心<br>
+<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%AF%86%E7%A0%81%E5%AD%A6">椭圆曲线密码学 - 维基百科，自由的百科全书 (wikipedia.org)</a><br>
+椭圆曲线算法(ECC) 是一种基于椭圆曲线数学的公开密钥加密算法, ECC 相比于 RSA 来讲, 有更短的密钥长度和相同等级的安全性(ECC被广泛认为是在给定密钥长度的情况下，最强大的非对称算法，因此在对带宽要求十分紧的连接中会十分有用.)<br>
+而且, ECC可以定义群之间的双线性映射, 即通过两个向量空间上的元素, 生成第三个向量空间上的元素的函数. 这使得他可以让两对数据通过交换和计算得出相同结果<br>
+ECC 算法衍生出了一些加密协议, 常见的有 ECDHE, MQV, ECDSA 等</p>
+<ul>
+<li>ECC 的公钥其实对应了椭圆曲线数学的 XY 坐标, 根据种子随机生成</li>
+<li>ECC 的私钥对应了椭圆曲线数学的 a 参数, 与公钥对应</li>
+<li>ECC 计算出的 share 也是 XY 坐标</li>
+<li>ECC 的种子有公开的几个, 例如<code>secp128r1/secp256r1/secp192k1</code>等, 两端的种子需要保持一致.<br>
+在线 ECDH 可参照 <a target="_blank" rel="noopener" href="http://www-cs-students.stanford.edu/~tjw/jsbn/ecdh.html">JavaScript ECDH Key Exchange Demo (stanford.edu)</a></li>
+</ul>
+<h2 id="椭圆曲线数学">椭圆曲线数学</h2>
+<p>椭圆曲线的数学原理在这里<br>
+<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF">椭圆曲线 - 维基百科，自由的百科全书 (wikipedia.org)</a><br>
+常言道, 学好数理化, 走遍天下都不怕. 可惜我是宅男, 不爱出门💀<br>
+这个原理在我的理解范畴之外了, 如果你对数学有兴趣, 可以尝试了解</p>
+<h2 id="三者关系">三者关系</h2>
+<p>先诞生出的椭圆曲线数学公式, 而后有的基于椭圆曲线数学公式的密码学算法 ECC, 而ECC 又衍生出一些加密协议和协议, ECDH就是其中一种</p>
+<h2 id="破解概率">破解概率</h2>
+<p>直接引用 wiki 原文</p>
+<blockquote>
+<p>如果攻击者拥有大型<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%87%8F%E5%AD%90%E8%AE%A1%E7%AE%97%E6%9C%BA" title="量子计算机">量子计算机</a>，那么他可以使用<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E7%A7%80%E7%88%BE%E6%BC%94%E7%AE%97%E6%B3%95" title="秀尔算法">秀尔算法</a>解决离散对数问题，从而破解私钥和共享秘密。目前的估算认为：破解256位素数域上的椭圆曲线，需要2330个<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%87%8F%E5%AD%90%E6%AF%94%E7%89%B9" title="量子比特">量子比特</a>与1260亿个<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%89%98%E4%BD%9B%E5%88%A9%E9%96%98" title="托佛利闸">托佛利门</a>。相比之下，使用秀尔算法破解2048位的RSA则需要4098个<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%87%8F%E5%AD%90%E6%AF%94%E7%89%B9" title="量子比特">量子比特</a>与5.2万亿个<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%89%98%E4%BD%9B%E5%88%A9%E9%96%98" title="托佛利闸">托佛利门</a>。因此，椭圆曲线会更先遭到量子计算机的破解。目前还不存在建造如此大型量子计算机的科学技术，因此椭圆曲线密码学至少在未来十年（或更久）依然是安全的。但是密码学家已经积极展开了<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%90%8E%E9%87%8F%E5%AD%90%E5%AF%86%E7%A0%81%E5%AD%A6" title="后量子密码学">后量子密码学</a>的研究。其中，<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/w/index.php?title=%E8%B6%85%E5%A5%87%E5%BC%82%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%90%8C%E6%BA%90%E5%AF%86%E9%92%A5%E4%BA%A4%E6%8D%A2&amp;action=edit&amp;redlink=1">超奇异椭圆曲线同源密钥交换</a>（SIDH）有望取代当前的常规椭圆曲线密钥交换(ECDH)</p>
+</blockquote>
+<h2 id="ECDH-协商流程">ECDH 协商流程</h2>
+<p>前面说过, ECDHE 和 ECDH 不同是协商出的密钥有效期, 实际上协商流程是一致的, 所以这里严谨一点, 就叫 ECDH 协商流程<br>
+ECDH 本身的协商流程如下图所示(按照数字编号走流程):<br>
+<img src="/images/posts/5.png" alt=""><br>
+上面说过, ECDH实际上是协商共享加密数据的过程, 难点在 ECC 的本身实现, 而交换的过程很简单, 互相发送自己生成的公钥即可, 公钥其实就是椭圆算法中的计算所需的 X/Y 坐标.</p>
+<h2 id="安全性">安全性</h2>
+<h3 id="中间人只监听数据">中间人只监听数据</h3>
+<p>两端协商密钥的过程中, 均未传输自己的私钥.<br>
+这样, 即使有中间人监听了两端之间的网络数据, 也只能获取到两端的公钥, 无法计算出真正的 shareX/shareY , 如图所示:<br>
+<img src="/images/posts/6.png" alt=""></p>
+<h3 id="中间人监听并伪造客户端和服务端">中间人监听并伪造客户端和服务端</h3>
+<p>如果中间人能做到, 同时伪造成客户端和服务端(对于客户端来讲是服务端, 对于服务端来讲是客户端), 那么ECDH生成的共享加密数据, 客户端与服务端无法对应<br>
+<img src="/images/posts/7.png" alt=""><br>
+但是细想, 这时候, 虽然客户端与服务端的共享加密数据不相同, 但是<strong>ECDH只是一个协商密钥的过程</strong>, 中间人在此种情况下成功在客户端与服务端不知情的情况下正常走完了协商流程, 之后的加密数据, 如果使用了这个协商出的加密数据, 就会导致之后的数据被中间人截获/解析, 并且无感知, 例如:<br>
+<img src="/images/posts/8.png" alt=""><br>
+不过, 这就逃脱了 ECDH 的范畴了, 这是真正需要开发者在业务中考虑的事情.</p>
+<h2 id="ECDH在-TLS1-2-中的使用流程">ECDH在 TLS1.2 中的使用流程</h2>
+<p>TLS1.2 的详细立案可看:<br>
+<a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc5246">RFC 5246: The Transport Layer Security (TLS) Protocol Version 1.2 (rfc-editor.org)</a><br>
+在 TLS1.2 协议中, 就使用了 ECDHE 来交换密钥, 我们来分析一下 TLS1.2 怎么使用 ECDHE 的:<br>
+<a target="_blank" rel="noopener" href="https://medium.com/@ethicalevil/tls-handshake-protocol-overview-a39e8eee2cf5">TLS v1.2 handshake overview | by apoorv munshi | Medium</a><br>
+如文章所述, 在步骤 <code>Server Key Exchange &amp; Server Hello Done</code> 时, 服务端不止返回了自己的 ECC 公钥, 还使用了 TLS 证书生成时的私钥对信息进行了签名(RSA), 而后, 客户端在接受到信息后, 尝试使用 TLS 证书中的公钥对信息进行验签, 用来保证数据一定是服务端返回的, 解决中间人篡改问题, 如图:<br>
+<img src="/images/posts/9.png" alt=""></p>
+<h2 id="业务中使用-ECDHE-进行前后端通信数据加密">业务中使用 ECDHE 进行前后端通信数据加密</h2>
+<p>我们可以仿造 TLS1.2 协议来打造一个前后端通信加密的流程, 但是需要注意以下几点:</p>
+<ul>
+<li>ECDH 本身的协商过程是"明文的", 协商出共享加密数据后使用该数据对 body 进行加密传输才是"安全的"</li>
+<li>ECDH 变成 ECDHE 是加了时效性, 因此共享加密数据的淘汰策略很重要</li>
+<li>ECC 生成的公私钥实际上是 XY 坐标, 考虑前端 JS 出问题生成 XY 重复的可能<br>
+修改后的密钥协商流程如下:<br>
+<img src="/images/posts/10.png" alt=""><br>
+<strong>之后的请求, 均使用 <code>aesKey1</code> 进行 <code>aes256cbc</code> 加解密通信</strong><br>
+<img src="/images/posts/11.png" alt=""><br>
+针对问题1, 我们使用混淆生成 key 进行 aes 加密的方式, 对请求进行加密, 提高解密难度<br>
+针对问题2, 我们将单次协商的共享密钥与当前会话绑定, 并对会话进行有效期淘汰管理<br>
+针对问题2, 我们将单次协商的共享密钥与当前会话和用户设备绑定, 并对会话进行有效期淘汰管理, 当触发到淘汰标准时会将服务端密钥进行删除, 客户端需重新协商密钥才可重新通信</li>
+</ul>
+<h2 id="相关模块">相关模块</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://pkg.go.dev/crypto/ecdsa">ecdsa package - crypto/ecdsa - Go Packages</a></li>
+<li><a target="_blank" rel="noopener" href="https://pkg.go.dev/crypto/elliptic">elliptic package - crypto/elliptic - Go Packages</a></li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>浅尝 ECDHE 协议流程</p><p><a href="https://www.chnmig.com/2022/10/17/ecdhe/">https://www.chnmig.com/2022/10/17/ecdhe/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>ChnMig</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2022-10-17</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2022-10-28</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%9E%B6%E6%9E%84/">架构</a><a class="link-muted mr-2" rel="tag" href="/tags/Golang/">Golang</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2022/09/04/inferiority_and_transcendence(1)/"><span class="level-item">自卑与超越 (1)</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><!--!--><div class="column column-right is-4-tablet is-4-desktop is-4-widescreen  order-3 is-sticky"><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#前言"><span class="level-left"><span class="level-item">1</span><span class="level-item">前言</span></span></a></li><li><a class="level is-mobile" href="#ECDHE"><span class="level-left"><span class="level-item">2</span><span class="level-item">ECDHE</span></span></a></li><li><a class="level is-mobile" href="#椭圆曲线密码学-ECC"><span class="level-left"><span class="level-item">3</span><span class="level-item">椭圆曲线密码学(ECC)</span></span></a></li><li><a class="level is-mobile" href="#椭圆曲线数学"><span class="level-left"><span class="level-item">4</span><span class="level-item">椭圆曲线数学</span></span></a></li><li><a class="level is-mobile" href="#三者关系"><span class="level-left"><span class="level-item">5</span><span class="level-item">三者关系</span></span></a></li><li><a class="level is-mobile" href="#破解概率"><span class="level-left"><span class="level-item">6</span><span class="level-item">破解概率</span></span></a></li><li><a class="level is-mobile" href="#ECDH-协商流程"><span class="level-left"><span class="level-item">7</span><span class="level-item">ECDH 协商流程</span></span></a></li><li><a class="level is-mobile" href="#安全性"><span class="level-left"><span class="level-item">8</span><span class="level-item">安全性</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#中间人只监听数据"><span class="level-left"><span class="level-item">8.1</span><span class="level-item">中间人只监听数据</span></span></a></li><li><a class="level is-mobile" href="#中间人监听并伪造客户端和服务端"><span class="level-left"><span class="level-item">8.2</span><span class="level-item">中间人监听并伪造客户端和服务端</span></span></a></li></ul></li><li><a class="level is-mobile" href="#ECDH在-TLS1-2-中的使用流程"><span class="level-left"><span class="level-item">9</span><span class="level-item">ECDH在 TLS1.2 中的使用流程</span></span></a></li><li><a class="level is-mobile" href="#业务中使用-ECDHE-进行前后端通信数据加密"><span class="level-left"><span class="level-item">10</span><span class="level-item">业务中使用 ECDHE 进行前后端通信数据加密</span></span></a></li><li><a class="level is-mobile" href="#相关模块"><span class="level-left"><span class="level-item">11</span><span class="level-item">相关模块</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/images/logo.gif" alt="ChnMig的个人网站" height="28"></a><p class="is-size-7"><span>&copy; 2022 ChnMig</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Contact me" href="mailto:ChnMig@Outlook.com"><i class="far fa-envelope"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ChnMig"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/mhchem.min.js" defer></script><script>window.addEventListener("load", function() {
+            document.querySelectorAll('[role="article"] > .content').forEach(function(element) {
+                renderMathInElement(element);
+            });
+        });</script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+            'HTML-CSS': {
+                matchFontHeight: false
+            },
+            SVG: {
+                matchFontHeight: false
+            },
+            CommonHTML: {
+                matchFontHeight: false
+            },
+            tex2jax: {
+                inlineMath: [
+                    ['$','$'],
+                    ['\\(','\\)']
+                ]
+            }
+        });</script><script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script><div id="outdated"><h6>Your browser is out-of-date!</h6><p>Update your browser to view this website correctly.&amp;npsb;<a id="btnUpdateBrowser" target="_blank" rel="noopener" href="http://outdatedbrowser.com/">Update my browser now </a></p><p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">×</a></p></div><script src="https://cdn.jsdelivr.net/npm/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script><script>window.addEventListener("load", function () {
+            outdatedBrowser({
+                bgColor: '#f25648',
+                color: '#ffffff',
+                lowerThan: 'object-fit' // display on IE11 or below
+            });
+        });</script><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
